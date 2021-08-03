@@ -19,7 +19,7 @@
 
 #ifdef __WIN32__
 
-	#include <winsock.h>
+	#include <winsock2.h>
 	#include <process.h>
 	#include "win32/wsnes9x.h"
 	#define ioctl ioctlsocket

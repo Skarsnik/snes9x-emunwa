@@ -894,6 +894,11 @@ void WinRegisterConfigItems()
 		assert(MAX_RECENT_HOSTS_LIST_SIZE == 16);
 	#undef ADD
 #undef CATEGORY
+#define CATEGORY "EmuNetworkAccess"
+        AddBool2("Enabled", Settings.NWAccess, false);
+        AddUInt("IdSeed", Settings.NWAccessSeed, 0);
+#undef CATEGORY
+
 #endif
 #define	CATEGORY "Controls\\Win"
 #define ADD(n,x) AddVKey("Joypad" #n ":" #x, Joypad[n-1].x, Joypad[n-1].x)

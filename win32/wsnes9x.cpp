@@ -20,7 +20,7 @@
 #define _WIN32_IE 0x0501
 #define _WIN32_WINNT 0x0501
 #endif
-
+#define _WINSOCKAPI_
 #pragma warning(disable: 4091)
 #include <shlobj.h>
 #pragma warning(default: 4091)
@@ -47,6 +47,7 @@
 #include "../controls.h"
 #include "../conffile.h"
 #include "../statemanager.h"
+#include "../emu-nwaccess/snes9x-nwaccess.h"
 #include "AVIOutput.h"
 #include "InputCustom.h"
 #include <vector>
@@ -710,10 +711,10 @@ void S9xRestoreWindowTitle ()
     {
         char def[_MAX_FNAME];
         _splitpath(Memory.ROMFilename.c_str(), NULL, NULL, def, NULL);
-        _stprintf(buf, TEXT("%s - %s %s"), (wchar_t *)Utf8ToWide(def), WINDOW_TITLE, TEXT(VERSION));
+        _stprintf(buf, TEXT("%s - %s %s-nwa"), (wchar_t *)Utf8ToWide(def), WINDOW_TITLE, TEXT(VERSION));
     }
     else
-        _stprintf(buf, TEXT("%s %s"), WINDOW_TITLE, TEXT(VERSION));
+        _stprintf(buf, TEXT("%s %s-nwa"), WINDOW_TITLE, TEXT(VERSION));
 
     SetWindowText (GUI.hWnd, buf);
 }
@@ -2083,6 +2084,13 @@ LRESULT CALLBACK WinProc(
             NPServer.SyncByReset ^= TRUE;
             break;
 #endif
+		case ID_EMU_NETWORK_COMMAND:
+			Settings.NWAccess ^= TRUE;
+			if (Settings.NWAccess)
+				S9xNWAccessStart();
+			else
+				S9xNWAccessStop();
+			break;
         case ID_SOUND_8000HZ:
 		case ID_SOUND_11025HZ:
 		case ID_SOUND_16000HZ:
@@ -2757,7 +2765,7 @@ BOOL WinInit( HINSTANCE hInstance)
 #endif
 
     TCHAR buf [100];
-    _stprintf(buf, TEXT("%s %s"), WINDOW_TITLE, TEXT(VERSION));
+    _stprintf(buf, TEXT("%s %s-nwa"), WINDOW_TITLE, TEXT(VERSION));
 
     DWORD dwExStyle;
     DWORD dwStyle;
@@ -3414,6 +3422,10 @@ int WINAPI WinMain(
 
 	S9xUnmapAllControls();
 	S9xSetupDefaultKeymap();
+    if (Settings.NWAccess)
+    {
+        S9xNWAccessStart();
+    }
 
 	DWORD lastTime = timeGetTime();
 
@@ -3439,7 +3451,7 @@ int WINAPI WinMain(
 
 			S9xSetSoundMute(GUI.Mute || Settings.ForcedPause || (Settings.Paused && (!Settings.FrameAdvance || GUI.FAMute)));
         }
-
+        S9xNWAGuiLoop();
 #ifdef NETPLAY_SUPPORT
         if (!Settings.NetPlay || !NetPlay.PendingWait4Sync ||
             WaitForSingleObject (GUI.ClientSemaphore, 100) != WAIT_TIMEOUT)
@@ -3804,6 +3816,9 @@ static void CheckMenuStates ()
     SetMenuItemInfo (GUI.hMenu, ID_NETPLAY_SYNC, FALSE, &mii);
     SetMenuItemInfo (GUI.hMenu, ID_NETPLAY_ROM, FALSE, &mii);
 #endif
+
+	mii.fState = Settings.NWAccess ? MFS_CHECKED : MFS_UNCHECKED;
+	SetMenuItemInfo(GUI.hMenu, ID_EMU_NETWORK_COMMAND, FALSE, &mii);
 
     mii.fState = Settings.ApplyCheats ? MFS_CHECKED : MFS_UNCHECKED;
     if (Settings.StopEmulation)

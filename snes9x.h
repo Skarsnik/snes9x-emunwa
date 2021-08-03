@@ -287,6 +287,9 @@ struct SSettings
 	char	ServerName[128];
 	int		Port;
 
+	bool8	NWAccess;
+    unsigned int NWAccessSeed;
+
 	bool8	MovieTruncate;
 	bool8	MovieNotifyIgnored;
 	bool8	WrongMovieStateProtection;

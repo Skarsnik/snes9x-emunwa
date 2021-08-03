@@ -788,6 +788,7 @@
     <ClCompile Include="..\external\imgui\snes9x_imgui.cpp">
       <Filter>GUI\VideoDriver\ImGui</Filter>
     </ClCompile>
+    <ClCompile Include="..\emu-nwaccess\snes9x-nwaccess.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="rsrc\nodrop.cur">
