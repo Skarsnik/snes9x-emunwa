@@ -15,7 +15,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (United States) resources
+// Anglais (Etats-Unis) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -929,169 +929,171 @@ END
 // Menu
 //
 
-IDR_MENU_US MENUEX
+IDR_MENU_US MENU
 BEGIN
-    POPUP "&File",                          0,MFT_STRING,MFS_ENABLED
+    POPUP "&File"
     BEGIN
-        MENUITEM "L&oad Game...\tCtrl+O",       ID_FILE_LOAD_GAME,MFT_STRING,MFS_ENABLED
-        POPUP "Recent &Games",                  0,MFT_STRING,MFS_ENABLED
+        MENUITEM "L&oad Game...\tCtrl+O",       ID_FILE_LOAD_GAME
+        POPUP "Recent &Games"
         BEGIN
-            MENUITEM "Dummy",                       ID_RECENT_DUMMY,MFT_STRING,MFS_GRAYED
+            MENUITEM "Dummy",                       ID_RECENT_DUMMY, INACTIVE
         END
-        MENUITEM "Load MultiCart...",           ID_FILE_LOADMULTICART,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        POPUP "&Save Game Position",            ID_FILE_SAVE_POPUP,MFT_STRING,MFS_ENABLED
+        MENUITEM "Load MultiCart...",           ID_FILE_LOADMULTICART
+        MENUITEM SEPARATOR
+        POPUP "&Save Game Position"
         BEGIN
-            MENUITEM MFT_SEPARATOR
-            MENUITEM "&Select File",                ID_FILE_SAVE_FILE,MFT_STRING,MFS_ENABLED
+            MENUITEM SEPARATOR
+            MENUITEM "&Select File",                ID_FILE_SAVE_FILE
         END
-        POPUP "&Load Game Position",            ID_FILE_LOAD_POPUP,MFT_STRING,MFS_ENABLED
+        POPUP "&Load Game Position"
         BEGIN
-            MENUITEM MFT_SEPARATOR
-            MENUITEM "Oops File",                   ID_FILE_LOAD_OOPS,MFT_STRING,MFS_ENABLED
-            MENUITEM MFT_SEPARATOR
-            MENUITEM "&Select File",                ID_FILE_LOAD_FILE,MFT_STRING,MFS_ENABLED
+            MENUITEM SEPARATOR
+            MENUITEM "Oops File",                   ID_FILE_LOAD_OOPS
+            MENUITEM SEPARATOR
+            MENUITEM "&Select File",                ID_FILE_LOAD_FILE
         END
-        MENUITEM "&Save with Preview",          ID_FILE_SAVE_PREVIEW,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Load with Preview",          ID_FILE_LOAD_PREVIEW,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        POPUP "Save Other",                     0,MFT_STRING,MFS_ENABLED
+        MENUITEM "&Save with Preview",          ID_FILE_SAVE_PREVIEW
+        MENUITEM "&Load with Preview",          ID_FILE_LOAD_PREVIEW
+        MENUITEM SEPARATOR
+        POPUP "Save Other"
         BEGIN
-            MENUITEM "S&ave SPC Data",              ID_FILE_SAVE_SPC_DATA,MFT_STRING,MFS_ENABLED
-            MENUITEM "Save Screenshot",             ID_SAVESCREENSHOT,MFT_STRING,MFS_ENABLED
-            MENUITEM "Sa&ve S-RAM Data",            ID_FILE_SAVE_SRAM_DATA,MFT_STRING,MFS_ENABLED
-            MENUITEM "Save Memory Pack",            ID_SAVEMEMPACK,MFT_STRING,MFS_ENABLED
+            MENUITEM "S&ave SPC Data",              ID_FILE_SAVE_SPC_DATA
+            MENUITEM "Save Screenshot",             ID_SAVESCREENSHOT
+            MENUITEM "Sa&ve S-RAM Data",            ID_FILE_SAVE_SRAM_DATA
+            MENUITEM "Save Memory Pack",            ID_SAVEMEMPACK
         END
-        MENUITEM "ROM Information...",          IDM_ROM_INFO,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "Movie Play...",               ID_FILE_MOVIE_PLAY,MFT_STRING,MFS_ENABLED
-        MENUITEM "Movie Record...",             ID_FILE_MOVIE_RECORD,MFT_STRING,MFS_ENABLED
-        MENUITEM "Movie Stop",                  ID_FILE_MOVIE_STOP,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "AVI Recording",               ID_FILE_AVI_RECORDING,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "&Reset Game",                 ID_FILE_RESET,MFT_STRING,MFS_ENABLED
-        MENUITEM "E&xit\tAlt+F4",               ID_FILE_EXIT,MFT_STRING,MFS_ENABLED
+        MENUITEM "ROM Information...",          IDM_ROM_INFO
+        MENUITEM SEPARATOR
+        MENUITEM "Movie Play...",               ID_FILE_MOVIE_PLAY
+        MENUITEM "Movie Record...",             ID_FILE_MOVIE_RECORD
+        MENUITEM "Movie Stop",                  ID_FILE_MOVIE_STOP
+        MENUITEM SEPARATOR
+        MENUITEM "AVI Recording",               ID_FILE_AVI_RECORDING
+        MENUITEM SEPARATOR
+        MENUITEM "&Reset Game",                 ID_FILE_RESET
+        MENUITEM "E&xit\tAlt+F4",               ID_FILE_EXIT
     END
-    POPUP "&Emulation",                     0,MFT_STRING,MFS_ENABLED
+    POPUP "&Emulation"
     BEGIN
-        MENUITEM "&Pause",                      ID_FILE_PAUSE,MFT_STRING,MFS_ENABLED
-        MENUITEM "Pause &When Inactive",        ID_EMULATION_PAUSEWHENINACTIVE,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Frame Advance",              ID_FRAME_ADVANCE,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "&Hacks...",                   ID_EMULATION_HACKS,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Settings...\tAlt+F8",        ID_OPTIONS_SETTINGS,MFT_STRING,MFS_ENABLED
+        MENUITEM "&Pause",                      ID_FILE_PAUSE
+        MENUITEM "Pause &When Inactive",        ID_EMULATION_PAUSEWHENINACTIVE
+        MENUITEM "&Frame Advance",              ID_FRAME_ADVANCE
+        MENUITEM SEPARATOR
+        MENUITEM "&Hacks...",                   ID_EMULATION_HACKS
+        MENUITEM "&Settings...\tAlt+F8",        ID_OPTIONS_SETTINGS
     END
-    POPUP "&Input",                         0,MFT_STRING,MFS_ENABLED
+    POPUP "&Input"
     BEGIN
-        MENUITEM "&Input Configuration...\tAlt+F7", 40022,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Customize Hotkeys...\tAlt+F9", ID_OPTIONS_KEYCUSTOM,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "Enable Background Input",     ID_EMULATION_BACKGROUNDINPUT,MFT_STRING,MFS_ENABLED
-        MENUITEM "Background Keyboard Hotkeys", ID_INPUT_BACKGROUNDKEYBOARDHOTKEYS,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "Detect gamepad changes",      ID_INPUT_DETECTGAMEPADCHANGES,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "Use SNES Joypad(s)",          IDM_SNES_JOYPAD,MFT_STRING,MFS_ENABLED
-        MENUITEM "Use SNES Mouse",              IDM_MOUSE_TOGGLE,MFT_STRING,MFS_ENABLED
-        MENUITEM "Use Super Scope",             IDM_SCOPE_TOGGLE,MFT_STRING,MFS_ENABLED
-        MENUITEM "Use Super Multitap (5-player)", IDM_ENABLE_MULTITAP,MFT_STRING,MFS_ENABLED
-        MENUITEM "Use Konami Justifier",        IDM_JUSTIFIER,MFT_STRING,MFS_ENABLED
-        MENUITEM "Use Mouse in alternate port", IDM_MOUSE_SWAPPED,MFT_STRING,MFS_ENABLED
-        MENUITEM "Use Multitaps (8-player)",    IDM_MULTITAP8,MFT_STRING,MFS_ENABLED
-        MENUITEM "Use Dual Justifiers",         IDM_JUSTIFIERS,MFT_STRING,MFS_ENABLED
-        MENUITEM "Use M.A.C.S. Rifle",          IDM_MACSRIFLE_TOGGLE,MFT_STRING,MFS_ENABLED
+        MENUITEM "&Input Configuration...\tAlt+F7", 40022
+        MENUITEM "&Customize Hotkeys...\tAlt+F9", ID_OPTIONS_KEYCUSTOM
+        MENUITEM SEPARATOR
+        MENUITEM "Enable Background Input",     ID_EMULATION_BACKGROUNDINPUT
+        MENUITEM "Background Keyboard Hotkeys", ID_INPUT_BACKGROUNDKEYBOARDHOTKEYS
+        MENUITEM SEPARATOR
+        MENUITEM "Detect gamepad changes",      ID_INPUT_DETECTGAMEPADCHANGES
+        MENUITEM SEPARATOR
+        MENUITEM "Use SNES Joypad(s)",          IDM_SNES_JOYPAD
+        MENUITEM "Use SNES Mouse",              IDM_MOUSE_TOGGLE
+        MENUITEM "Use Super Scope",             IDM_SCOPE_TOGGLE
+        MENUITEM "Use Super Multitap (5-player)", IDM_ENABLE_MULTITAP
+        MENUITEM "Use Konami Justifier",        IDM_JUSTIFIER
+        MENUITEM "Use Mouse in alternate port", IDM_MOUSE_SWAPPED
+        MENUITEM "Use Multitaps (8-player)",    IDM_MULTITAP8
+        MENUITEM "Use Dual Justifiers",         IDM_JUSTIFIERS
+        MENUITEM "Use M.A.C.S. Rifle",          IDM_MACSRIFLE_TOGGLE
     END
-    POPUP "&Sound",                         0,MFT_STRING,MFS_ENABLED
+    POPUP "&Sound"
     BEGIN
-        POPUP "&Playback Rate",                 0,MFT_STRING,MFS_ENABLED
+        POPUP "&Playback Rate"
         BEGIN
-            MENUITEM "&Mute Sound",                 ID_SOUND_NOSOUND,MFT_STRING,MFS_ENABLED
-            MENUITEM "8KHz",                        ID_SOUND_8000HZ,MFT_STRING,MFS_ENABLED
-            MENUITEM "11KHz",                       ID_SOUND_11025HZ,MFT_STRING,MFS_ENABLED
-            MENUITEM "16KHz",                       ID_SOUND_16000HZ,MFT_STRING,MFS_ENABLED
-            MENUITEM "22KHz",                       ID_SOUND_22050HZ,MFT_STRING,MFS_ENABLED
-            MENUITEM "30KHz",                       ID_SOUND_30000HZ,MFT_STRING,MFS_ENABLED
-            MENUITEM "32KHz",                       ID_SOUND_32000HZ,MFT_STRING,MFS_ENABLED
-            MENUITEM "35KHz",                       ID_SOUND_35000HZ,MFT_STRING,MFS_ENABLED
-            MENUITEM "44KHz",                       ID_SOUND_44100HZ,MFT_STRING,MFS_ENABLED
-            MENUITEM "48KHz",                       ID_SOUND_48000HZ,MFT_STRING,MFS_ENABLED
+            MENUITEM "&Mute Sound",                 ID_SOUND_NOSOUND
+            MENUITEM "8KHz",                        ID_SOUND_8000HZ
+            MENUITEM "11KHz",                       ID_SOUND_11025HZ
+            MENUITEM "16KHz",                       ID_SOUND_16000HZ
+            MENUITEM "22KHz",                       ID_SOUND_22050HZ
+            MENUITEM "30KHz",                       ID_SOUND_30000HZ
+            MENUITEM "32KHz",                       ID_SOUND_32000HZ
+            MENUITEM "35KHz",                       ID_SOUND_35000HZ
+            MENUITEM "44KHz",                       ID_SOUND_44100HZ
+            MENUITEM "48KHz",                       ID_SOUND_48000HZ
         END
-        POPUP "&Buffer Length",                 0,MFT_STRING,MFS_ENABLED
+        POPUP "&Buffer Length"
         BEGIN
-            MENUITEM "16ms",                        ID_SOUND_16MS,MFT_STRING,MFS_ENABLED
-            MENUITEM "32ms",                        ID_SOUND_32MS,MFT_STRING,MFS_ENABLED
-            MENUITEM "48ms",                        ID_SOUND_48MS,MFT_STRING,MFS_ENABLED
-            MENUITEM "64ms",                        ID_SOUND_64MS,MFT_STRING,MFS_ENABLED
-            MENUITEM "80ms",                        ID_SOUND_80MS,MFT_STRING,MFS_ENABLED
-            MENUITEM "96ms",                        ID_SOUND_96MS,MFT_STRING,MFS_ENABLED
-            MENUITEM "112ms",                       ID_SOUND_112MS,MFT_STRING,MFS_ENABLED
-            MENUITEM "128ms",                       ID_SOUND_128MS,MFT_STRING,MFS_ENABLED
-            MENUITEM "144ms",                       ID_SOUND_144MS,MFT_STRING,MFS_ENABLED
-            MENUITEM "160ms",                       ID_SOUND_160MS,MFT_STRING,MFS_ENABLED
-            MENUITEM "176ms",                       ID_SOUND_176MS,MFT_STRING,MFS_ENABLED
-            MENUITEM "192ms",                       ID_SOUND_192MS,MFT_STRING,MFS_ENABLED
-            MENUITEM "208ms",                       ID_SOUND_208MS,MFT_STRING,MFS_ENABLED
+            MENUITEM "16ms",                        ID_SOUND_16MS
+            MENUITEM "32ms",                        ID_SOUND_32MS
+            MENUITEM "48ms",                        ID_SOUND_48MS
+            MENUITEM "64ms",                        ID_SOUND_64MS
+            MENUITEM "80ms",                        ID_SOUND_80MS
+            MENUITEM "96ms",                        ID_SOUND_96MS
+            MENUITEM "112ms",                       ID_SOUND_112MS
+            MENUITEM "128ms",                       ID_SOUND_128MS
+            MENUITEM "144ms",                       ID_SOUND_144MS
+            MENUITEM "160ms",                       ID_SOUND_160MS
+            MENUITEM "176ms",                       ID_SOUND_176MS
+            MENUITEM "192ms",                       ID_SOUND_192MS
+            MENUITEM "208ms",                       ID_SOUND_208MS
         END
-        POPUP "&Channels",                      0,MFT_STRING,MFS_ENABLED
+        POPUP "&Channels"
         BEGIN
-            MENUITEM "Channel &1",                  ID_CHANNELS_CHANNEL1,MFT_STRING,MFS_ENABLED
-            MENUITEM "Channel &2",                  ID_CHANNELS_CHANNEL2,MFT_STRING,MFS_ENABLED
-            MENUITEM "Channel &3",                  ID_CHANNELS_CHANNEL3,MFT_STRING,MFS_ENABLED
-            MENUITEM "Channel &4",                  ID_CHANNELS_CHANNEL4,MFT_STRING,MFS_ENABLED
-            MENUITEM "Channel &5",                  ID_CHANNELS_CHANNEL5,MFT_STRING,MFS_ENABLED
-            MENUITEM "Channel &6",                  ID_CHANNELS_CHANNEL6,MFT_STRING,MFS_ENABLED
-            MENUITEM "Channel &7",                  ID_CHANNELS_CHANNEL7,MFT_STRING,MFS_ENABLED
-            MENUITEM "Channel &8",                  ID_CHANNELS_CHANNEL8,MFT_STRING,MFS_ENABLED
-            MENUITEM MFT_SEPARATOR
-            MENUITEM "Enable All",                  ID_CHANNELS_ENABLEALL,MFT_STRING,MFS_ENABLED
+            MENUITEM "Channel &1",                  ID_CHANNELS_CHANNEL1
+            MENUITEM "Channel &2",                  ID_CHANNELS_CHANNEL2
+            MENUITEM "Channel &3",                  ID_CHANNELS_CHANNEL3
+            MENUITEM "Channel &4",                  ID_CHANNELS_CHANNEL4
+            MENUITEM "Channel &5",                  ID_CHANNELS_CHANNEL5
+            MENUITEM "Channel &6",                  ID_CHANNELS_CHANNEL6
+            MENUITEM "Channel &7",                  ID_CHANNELS_CHANNEL7
+            MENUITEM "Channel &8",                  ID_CHANNELS_CHANNEL8
+            MENUITEM SEPARATOR
+            MENUITEM "Enable All",                  ID_CHANNELS_ENABLEALL
         END
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "S&ync Sound\tAlt+]",          ID_SOUND_SYNC,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Settings...\tAlt+T",         ID_SOUND_OPTIONS,MFT_STRING,MFS_ENABLED
+        MENUITEM SEPARATOR
+        MENUITEM "S&ync Sound\tAlt+]",          ID_SOUND_SYNC
+        MENUITEM "&Settings...\tAlt+T",         ID_SOUND_OPTIONS
     END
-    POPUP "&Video",                         0,MFT_STRING,MFS_ENABLED
+    POPUP "&Video"
     BEGIN
-        MENUITEM "&Hide Menubar\tEsc",          ID_WINDOW_HIDEMENUBAR,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Full Screen\tAlt+Enter",     ID_WINDOW_FULLSCREEN,MFT_STRING,MFS_ENABLED
-        POPUP "&Window Size",                   0,MFT_STRING,MFS_ENABLED
+        MENUITEM "&Hide Menubar\tEsc",          ID_WINDOW_HIDEMENUBAR
+        MENUITEM "&Full Screen\tAlt+Enter",     ID_WINDOW_FULLSCREEN
+        POPUP "&Window Size"
         BEGIN
-            MENUITEM "&1x",                         ID_WINDOW_SIZE_1X,MFT_STRING,MFS_ENABLED
-            MENUITEM "&2x",                         ID_WINDOW_SIZE_2X,MFT_STRING,MFS_ENABLED
-            MENUITEM "&3x",                         ID_WINDOW_SIZE_3X,MFT_STRING,MFS_ENABLED
-            MENUITEM "&4x",                         ID_WINDOW_SIZE_4X,MFT_STRING,MFS_ENABLED
+            MENUITEM "&1x",                         ID_WINDOW_SIZE_1X
+            MENUITEM "&2x",                         ID_WINDOW_SIZE_2X
+            MENUITEM "&3x",                         ID_WINDOW_SIZE_3X
+            MENUITEM "&4x",                         ID_WINDOW_SIZE_4X
         END
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "&Stretch Image\tAlt+Backspace", ID_WINDOW_STRETCH,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Maintain Aspect Ratio",      ID_WINDOW_ASPECTRATIO,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Bilinear Filtering",         ID_WINDOW_BILINEAR,MFT_STRING,MFS_ENABLED
-        MENUITEM "Show Frame &Rate",            ID_VIDEO_SHOWFRAMERATE,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "&Display Configuration...\tAlt+F5", ID_OPTIONS_DISPLAY,MFT_STRING,MFS_ENABLED
+        MENUITEM SEPARATOR
+        MENUITEM "&Stretch Image\tAlt+Backspace", ID_WINDOW_STRETCH
+        MENUITEM "&Maintain Aspect Ratio",      ID_WINDOW_ASPECTRATIO
+        MENUITEM "&Bilinear Filtering",         ID_WINDOW_BILINEAR
+        MENUITEM "Show Frame &Rate",            ID_VIDEO_SHOWFRAMERATE
+        MENUITEM SEPARATOR
+        MENUITEM "&Display Configuration...\tAlt+F5", ID_OPTIONS_DISPLAY
     END
-    POPUP "&Cheat",                         0,MFT_STRING,MFS_ENABLED
+    POPUP "&Cheat"
     BEGIN
-        MENUITEM "&Game Genie, Pro-Action Replay Codes\tAlt+G", ID_CHEAT_ENTER,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Search for New Cheats",      ID_CHEAT_SEARCH_MODAL,MFT_STRING,MFS_ENABLED
-        MENUITEM "Search for New Cheats (active)\tAlt+A", 40064,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Apply Cheats",               ID_CHEAT_APPLY,MFT_STRING,MFS_CHECKED
+        MENUITEM "&Game Genie, Pro-Action Replay Codes\tAlt+G", ID_CHEAT_ENTER
+        MENUITEM "&Search for New Cheats",      ID_CHEAT_SEARCH_MODAL
+        MENUITEM "Search for New Cheats (active)\tAlt+A", 40064
+        MENUITEM "&Apply Cheats",               ID_CHEAT_APPLY, CHECKED
     END
-    POPUP "&Netplay",                       0,MFT_STRING,MFS_ENABLED
+    POPUP "&Netplay"
     BEGIN
-        MENUITEM "&Connect to Server...",       ID_NETPLAY_CONNECT,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Disconnect from Server",     ID_NETPLAY_DISCONNECT,MFT_STRING,MFS_ENABLED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "&Act as Server",              ID_NETPLAY_SERVER,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Re-sync all Clients Using Freeze File Now", ID_NETPLAY_SYNC,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Send ROM Image to Clients Now", ID_NETPLAY_ROM,MFT_STRING,MFS_ENABLED
-        MENUITEM "S&end ROM Image to Clients",  ID_NETPLAY_SEND_ROM_ON_CONNECT,MFT_STRING,MFS_ENABLED
-        MENUITEM "S&ync Using Reset Game",      ID_NETPLAY_SYNC_BY_RESET,MFT_STRING,MFS_CHECKED
-        MENUITEM MFT_SEPARATOR
-        MENUITEM "&Options...",                 ID_NETPLAY_OPTIONS,MFT_STRING,MFS_ENABLED
+        MENUITEM "&Connect to Server...",       ID_NETPLAY_CONNECT
+        MENUITEM "&Disconnect from Server",     ID_NETPLAY_DISCONNECT
+        MENUITEM SEPARATOR
+        MENUITEM "&Act as Server",              ID_NETPLAY_SERVER
+        MENUITEM "&Re-sync all Clients Using Freeze File Now", ID_NETPLAY_SYNC
+        MENUITEM "&Send ROM Image to Clients Now", ID_NETPLAY_ROM
+        MENUITEM "S&end ROM Image to Clients",  ID_NETPLAY_SEND_ROM_ON_CONNECT
+        MENUITEM "S&ync Using Reset Game",      ID_NETPLAY_SYNC_BY_RESET, CHECKED
+        MENUITEM SEPARATOR
+        MENUITEM "&Options...",                 ID_NETPLAY_OPTIONS
+        MENUITEM SEPARATOR
+        MENUITEM "Enable Emu Network Control",  ID_EMU_NETWORK_COMMAND, CHECKED
     END
-    POPUP "&Help",                          0,MFT_STRING,MFS_ENABLED
+    POPUP "&Help"
     BEGIN
-        MENUITEM "&About...",                   ID_HELP_ABOUT,MFT_STRING,MFS_ENABLED
+        MENUITEM "&About...",                   ID_HELP_ABOUT
     END
 END
 
@@ -1226,7 +1228,7 @@ BEGIN
     0
 END
 
-#endif    // English (United States) resources
+#endif    // Anglais (Etats-Unis) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

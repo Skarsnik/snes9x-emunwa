@@ -22,6 +22,7 @@
 #include <sys/types.h>
 
 #ifdef __WIN32__
+#define _WINSOCKAPI_
 #define NOMINMAX 1
 #include <windows.h>
 #endif

@@ -16,6 +16,7 @@
 #ifndef STRICT
 #define STRICT
 #endif
+#define _WINSOCKAPI_
 #include <windows.h>
 #include <windowsx.h>
 #include <tchar.h>

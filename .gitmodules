@@ -13,3 +13,6 @@
 [submodule "shaders/glslang"]
 	path = shaders/glslang
 	url = https://github.com/KhronosGroup/glslang.git
+[submodule "emu-nwaccess/emulator-networkaccess"]
+	path = emu-nwaccess/emulator-networkaccess
+	url = https://github.com/usb2snes/emulator-networkaccess.git

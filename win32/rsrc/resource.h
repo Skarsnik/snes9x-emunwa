@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ generated include file.
-// Used by snes9x.rc
+// fichier Include Microsoft Visual C++.
+// Utilise par snes9x.rc
 //
 #define IDR_RT_MANIFEST2                1
 #define IDCANCEL2                       3
@@ -455,6 +455,7 @@
 #define ID_NETPLAY_SYNC                 40082
 #define ID_NETPLAY_SEND_ROM_ON_CONNECT  40083
 #define ID_NETPLAY_SYNC_BY_RESET        40084
+#define ID_EMU_NETWORK_COMMAND			41084
 #define ID_SOUND_48000HZ                40085
 #define ID_SOUND_16000HZ                40086
 #define ID_SOUND_35000HZ                40087
@@ -536,6 +537,7 @@
 #define ID_FILE_LOAD_PREVIEW            40179
 #define ID_FILE_SAVE_PREVIEW            40180
 #define ID_FILE_SAVE_POPUP              40181
+#define ID_NETPLAY_ENABLEEMUNETWORKCONTROL 40181
 #define ID_FILE_LOAD_POPUP              40182
 #define ID_FILE_SAVE0                   44000
 #define ID_FILE_SAVE_LAST               44100
@@ -552,7 +554,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        169
-#define _APS_NEXT_COMMAND_VALUE         40181
+#define _APS_NEXT_COMMAND_VALUE         40182
 #define _APS_NEXT_CONTROL_VALUE         3040
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
