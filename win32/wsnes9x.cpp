@@ -3439,12 +3439,13 @@ int WINAPI WinMain(
     while (TRUE)
     {
 		EnsureInputDisplayUpdated();
-
+        S9xNWAGuiLoop();
 		// note: using GUI.hWnd instead of NULL for PeekMessage/GetMessage breaks some non-modal dialogs
         while (Settings.StopEmulation || (Settings.Paused && !Settings.FrameAdvance) ||
 			Settings.ForcedPause ||
 			PeekMessage (&msg, NULL, 0, 0, PM_NOREMOVE))
         {
+            S9xNWAGuiLoop();
             if (!GetMessage (&msg, NULL, 0, 0))
                 goto loop_exit; // got WM_QUIT
 
@@ -3456,7 +3457,7 @@ int WINAPI WinMain(
 
 			S9xSetSoundMute(GUI.Mute || Settings.ForcedPause || (Settings.Paused && (!Settings.FrameAdvance || GUI.FAMute)));
         }
-        S9xNWAGuiLoop();
+        //S9xNWAGuiLoop();
 #ifdef NETPLAY_SUPPORT
         if (!Settings.NetPlay || !NetPlay.PendingWait4Sync ||
             WaitForSingleObject (GUI.ClientSemaphore, 100) != WAIT_TIMEOUT)
@@ -4139,6 +4140,12 @@ static bool LoadROM(const TCHAR *filename, const TCHAR *filename2 /*= NULL*/) {
 
 	return !Settings.StopEmulation;
 }
+
+bool    wsnes9xLoadROM(const TCHAR *filename, const TCHAR *filename2 /*= NULL*/)
+{
+    return LoadROM(filename, filename2);
+}
+
 
 bool8 S9xLoadROMImage (const TCHAR *string)
 {

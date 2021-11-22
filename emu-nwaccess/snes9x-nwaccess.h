@@ -1,5 +1,5 @@
 #pragma once
-
+#include <atomic>
 
 #ifdef _WIN32
     #include <winsock2.h>
@@ -8,6 +8,15 @@
 
 const int NWACCESS_START_PORT = 68500;
 const int NWACCESS_MAX_CLIENTS = 5;
+
+enum class NetworkAccessControlCommand {
+    CMD_RESET,
+    CMD_PAUSE,
+    CMD_STOP,
+    CMD_RESUME,
+    CMD_RELOAD,
+    CMD_LOAD
+};
 
 struct NetworkAccessClient {
     SOCKET      socket;
@@ -26,6 +35,24 @@ struct NetworkAccessInfos {
     SOCKET          serverSocket;
     unsigned int    listenPort;
     struct NetworkAccessClient	clients[5];
+    
+    std::atomic_bool stateTriggerMutex;
+    std::atomic_bool stateDoneMutex;
+    std::atomic_bool controlCommandTriggerMutex;
+    std::atomic_bool controlCommandDone;
+    
+    SOCKET          stateTriggerClient;
+    char*           saveStatePath;
+    bool            stateError;
+    bool            saveState;
+
+    bool                        controlCommandError;
+    NetworkAccessControlCommand command;
+    char*                       romToLoad;
+    SOCKET                      controlClient;
+    bool                        controlError;
+
+    std::atomic_bool    stopRequest;
     HANDLE          messageMutex;
     char            message[512];
     uintptr_t       thread;
@@ -39,6 +66,7 @@ void	S9XSetNWAError(const char*msg);
 bool    S9xNWAGuiLoop();
 void    S9xNWAServerLoop(void*);
 void    EmuNWAccessSetMessage(char* msg);
+bool    EmuNWAccessAfterPoll();
 
 bool    EmuNWAccessServerStarted(int port);
 

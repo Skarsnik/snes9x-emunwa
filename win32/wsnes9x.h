@@ -473,4 +473,8 @@ void FreezeUnfreezeDialogPreview(bool8 freeze);
 void FreezeUnfreeze(const char *filename, bool8 freeze);
 bool UnfreezeScreenshotSlot(int slot, uint16 **image_buffer, int &width, int &height);
 
+// This is used by NWAccess code to perform a loadrom correctly
+bool    wsnes9xLoadROM(const TCHAR *filename, const TCHAR *filename2 /*= NULL*/);
+
+
 #endif // !defined(SNES9X_H_INCLUDED)
