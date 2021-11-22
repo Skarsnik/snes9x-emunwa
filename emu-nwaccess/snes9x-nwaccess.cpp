@@ -9,11 +9,15 @@
 #include "snes9x.h"
 #include "memmap.h"
 #include "snes9x-nwaccess.h"
- 
+#include "snapshot.h"
+#include "display.h"
+
 
 #pragma comment(lib, "Ws2_32.lib")
 
 #ifdef __WIN32__
+#include "win32_sound.h"
+#include "wsnes9x.h"
 
 #elif defined (linux) 
 
@@ -105,8 +109,11 @@ static void create_thread()
 
 }
 
+// This should run once
 bool S9xNWAccessInit()
 {
+    if (NetworkAccessData.initalized)
+        return false;
 #ifdef _WIN32
     WSADATA data;
     if (WSAStartup(MAKEWORD(1, 0), &data) != 0)
@@ -115,16 +122,29 @@ bool S9xNWAccessInit()
         return (FALSE);
     }
     printf("WSAStartup done\n");
-    NetworkAccessData.initalized = true;
     NetworkAccessData.messageMutex = CreateMutex(NULL, TRUE, NULL);
     ReleaseMutex(NetworkAccessData.messageMutex);
 #endif
     generic_poll_server_add_callback(SERVER_STARTED, &EmuNWAccessServerStarted);
     generic_poll_server_add_callback(NEW_CLIENT, &EmuNWAccessNewClient);
     generic_poll_server_add_callback(REMOVED_CLIENT, &EmuNWAccessRemoveClient);
-    NetworkAccessData.message[0] = 0;
-	create_thread();
+    generic_poll_server_add_callback(AFTER_POLL, &EmuNWAccessAfterPoll);
+    //create_thread();
+    NetworkAccessData.initalized = true;
+
     return true;
+}
+
+void S9xNWAccessInitData()
+{
+    NetworkAccessData.stopRequest = false;
+    NetworkAccessData.controlCommandTriggerMutex = false;
+    NetworkAccessData.controlCommandDone = false;
+    NetworkAccessData.stateTriggerMutex = false;
+    NetworkAccessData.stateDoneMutex = false;
+    NetworkAccessData.saveStatePath = nullptr;
+    NetworkAccessData.romToLoad = nullptr;
+    NetworkAccessData.message[0] = 0;
 }
 
 
@@ -132,11 +152,19 @@ bool	S9xNWAccessStart()
 {
     if (NetworkAccessData.initalized == false)
         S9xNWAccessInit();
+    S9xNWAccessInitData();
     uintptr_t thread;
     thread = _beginthread(S9xNWAServerLoop, 0, NULL);
     NetworkAccessData.thread = thread;
     return (thread != (uintptr_t)(~0));
 }
+
+bool	S9xNWAccessStop()
+{
+    NetworkAccessData.stopRequest = true;
+    return true;
+}
+
 
 
 void	S9xNWAServerLoop(void *)
@@ -163,9 +191,37 @@ bool EmuNWAccessServerStarted(int port)
     return false;
 }
 
-bool	S9xNWAccessStop()
+
+/* This allow to do thing every 200 ms or when an event on socket happen
+This is where we reply to all the control comand and savestate
+Commands are done in the gui loop function.
+*/
+bool EmuNWAccessAfterPoll()
 {
-    // TODO
+    if (NetworkAccessData.stateDoneMutex)
+    {
+        s_debug("Replying to state command\n");
+        if (NetworkAccessData.stateError)
+            send_error(NetworkAccessData.stateTriggerClient, "Unable to do the save/load state operation");
+        else
+            write(NetworkAccessData.stateTriggerClient, "\n\n", 2);
+        NetworkAccessData.stateDoneMutex = false;
+    }
+    if (NetworkAccessData.controlCommandDone)
+    {
+        if (NetworkAccessData.controlError)
+            send_error(NetworkAccessData.controlClient, "Unable to perform the requested control command");
+        else
+            write(NetworkAccessData.controlClient, "\n\n", 2);
+        if (NetworkAccessData.command == NetworkAccessControlCommand::CMD_LOAD)
+            ;// free(NetworkAccessData.romToLoad); //FIXME, this trigger a heap corruption?
+        NetworkAccessData.controlCommandDone = false;
+    }
+    if (NetworkAccessData.stopRequest)
+    {
+        generic_poll_server_stop = true;
+        NetworkAccessData.stopRequest = false;
+    }
     return true;
 }
 
@@ -183,11 +239,112 @@ bool    S9xNWAGuiLoop()
     {
         if (NetworkAccessData.message[0] != 0)
         {
+            S9xSetInfoString(NetworkAccessData.message);
             S9xMessage(S9X_INFO, 42, NetworkAccessData.message);
             s_debug("Trying to show message to OSD : %s\n", NetworkAccessData.message);
             NetworkAccessData.message[0] = 0;
         }
         ReleaseMutex(NetworkAccessData.messageMutex);
+    }
+
+    if (NetworkAccessData.stateTriggerMutex)
+    {
+        NetworkAccessData.stateDoneMutex = false;
+        NetworkAccessData.stateError = false;
+        if (Settings.StopEmulation)
+        {
+            NetworkAccessData.stateError = true;
+        } else {
+            S9xSetPause(PAUSE_FREEZE_FILE);
+            // Save State
+            if (NetworkAccessData.saveState)
+            {
+                S9xFreezeGame(NetworkAccessData.saveStatePath);
+            }
+            else { // Load State
+                S9xUnfreezeGame(NetworkAccessData.saveStatePath);
+            }
+            S9xClearPause(PAUSE_FREEZE_FILE);
+        }
+        NetworkAccessData.stateDoneMutex = true;
+        NetworkAccessData.stateTriggerMutex = false;
+    }
+    if (NetworkAccessData.controlCommandTriggerMutex)
+    {
+        NetworkAccessData.controlCommandDone = false;
+        NetworkAccessData.controlCommandError = false;
+        if ((NetworkAccessData.command == NetworkAccessControlCommand::CMD_RESUME ||
+            NetworkAccessData.command == NetworkAccessControlCommand::CMD_PAUSE) &&
+            Settings.StopEmulation)
+        {
+            NetworkAccessData.controlCommandError = true;
+        }
+        else {
+            switch (NetworkAccessData.command)
+            {
+            case NetworkAccessControlCommand::CMD_PAUSE:
+            {
+                S9xSetPause(1);
+                break;
+                //Settings.Paused = Settings.Paused ^ true;
+                //Settings.FrameAdvance = false;
+            }
+            case NetworkAccessControlCommand::CMD_STOP:
+            {
+                Settings.StopEmulation = TRUE;
+                break;
+            }
+            case NetworkAccessControlCommand::CMD_RESUME:
+            {
+                S9xClearPause(1);
+                break;
+            }
+            case NetworkAccessControlCommand::CMD_RESET:
+            {
+                S9xSoftReset();
+                ReInitSound(); // This is Win32 only
+                break;
+            }
+            case NetworkAccessControlCommand::CMD_RELOAD:
+            {
+                S9xReset();
+                break;
+            }
+            case NetworkAccessControlCommand::CMD_LOAD:
+            {
+                #ifdef __WIN32__
+                TCHAR romFile[2048];
+                int nb_backslash = 0;
+                /* Snes9x code expect path with \\ */
+                for (unsigned int i = 0; i < strlen(NetworkAccessData.romToLoad); i++)
+                {
+                    if (NetworkAccessData.romToLoad[i] == '\\')
+                    {
+                        nb_backslash++;
+                    }
+                }
+                char* fixPath = (char*) malloc(strlen(NetworkAccessData.romToLoad) + nb_backslash + 1);
+                unsigned j = 0;
+                for (unsigned int i = 0; i < strlen(NetworkAccessData.romToLoad); i++)
+                {
+                    fixPath[j] = NetworkAccessData.romToLoad[i];
+                    if (fixPath[j] == '\\')
+                    {
+                        j++;
+                        fixPath[j] = '\\';
+                    }
+                    j++;
+                }
+                fixPath[j + 1] = 0;
+                swprintf(romFile, strlen(fixPath), L"%hs", fixPath);
+                wsnes9xLoadROM(romFile, NULL);
+                #endif
+                break;
+            }
+            }
+        }
+        NetworkAccessData.controlCommandDone = true;
+        NetworkAccessData.controlCommandTriggerMutex = false;
     }
     return true;
 }
@@ -274,35 +431,51 @@ bool EmuNWAccessEmuStatus(SOCKET socket, char ** args, int ac)
     return true;
 }
 
+static bool    DoControlCommand(SOCKET socket, NetworkAccessControlCommand cmd)
+{
+    if (NetworkAccessData.controlCommandDone == false &&
+        NetworkAccessData.controlCommandTriggerMutex == true)
+    {
+        send_error(socket, "Already doing a control command");
+        return true;
+    }
+    NetworkAccessData.controlCommandTriggerMutex = true;
+    NetworkAccessData.command = cmd;
+    NetworkAccessData.controlClient = socket;
+    return true;
+}
+
 bool EmuNWAccessEmuPause(SOCKET socket, char ** args, int ac)
 {
-    return false;
+    return DoControlCommand(socket, NetworkAccessControlCommand::CMD_PAUSE);
 }
 
 bool EmuNWAccessEmuStop(SOCKET socket, char ** args, int ac)
 {
-    return false;
+    return DoControlCommand(socket, NetworkAccessControlCommand::CMD_STOP);
 }
 
 bool EmuNWAccessEmuReset(SOCKET socket, char ** args, int ac)
 {
-    //S9xSoftReset();
-    return false;
+    return DoControlCommand(socket, NetworkAccessControlCommand::CMD_RESET);
 }
 
 bool EmuNWAccessEmuResume(SOCKET socket, char ** args, int ac)
 {
-    return false;
+    return DoControlCommand(socket, NetworkAccessControlCommand::CMD_RESUME);
 }
 
 bool EmuNWAccessEmuReload(SOCKET socket, char ** args, int ac)
 {
-    return false;
+    return DoControlCommand(socket, NetworkAccessControlCommand::CMD_RELOAD);
 }
 
 bool EmuNWAccessLoadGame(SOCKET socket, char ** args, int ac)
 {
-    return false;
+    DoControlCommand(socket, NetworkAccessControlCommand::CMD_LOAD);
+    NetworkAccessData.romToLoad = (char*) malloc(strlen(args[0]) + 1);
+    strcpy(NetworkAccessData.romToLoad, args[0]);
+    return true;
 }
 
 bool EmuNWAccessGameInfo(SOCKET socket, char ** args, int ac)
@@ -449,10 +622,20 @@ bool EmuNWAccessNop(SOCKET socket, char ** args, int ac)
 
 bool EmuNWAccessLoadState(SOCKET socket, char ** args, int ac)
 {
-    return false;
+    NetworkAccessData.stateTriggerMutex = true;
+    NetworkAccessData.saveStatePath = (char*)malloc(strlen(args[0]) + 1);
+    NetworkAccessData.saveState = false;
+    NetworkAccessData.stateTriggerClient = socket;
+    strcpy(NetworkAccessData.saveStatePath, args[0]);
+    return true;
 }
 
 bool EmuNWAccessSaveState(SOCKET socket, char ** args, int ac)
 {
-    return false;
+    NetworkAccessData.stateTriggerMutex = true;
+    NetworkAccessData.saveStatePath = (char*)malloc(strlen(args[0]) + 1);
+    NetworkAccessData.saveState = true;
+    NetworkAccessData.stateTriggerClient = socket;
+    strcpy(NetworkAccessData.saveStatePath, args[0]);
+    return true;
 }
