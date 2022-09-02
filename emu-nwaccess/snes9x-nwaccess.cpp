@@ -72,13 +72,14 @@ static char*	hexString(const char* str, const unsigned int size)
 }
 
 const generic_emu_nwa_commands_map_t generic_emu_mwa_map = {
-    {EMU_INFO, EmuNWAccessEmuInfo},
-    {EMU_STATUS, EmuNWAccessEmuStatus},
-    {EMU_PAUSE, EmuNWAccessEmuPause},
-    {EMU_STOP, EmuNWAccessEmuStop},
-    {EMU_RESET, EmuNWAccessEmuReset},
-    {EMU_RESUME, EmuNWAccessEmuResume},
-    {EMU_RELOAD, EmuNWAccessEmuReload},
+    {EMULATOR_INFO, EmuNWAccessEmuInfo},
+    {EMULATION_STATUS, EmuNWAccessEmuStatus},
+    {EMULATION_PAUSE, EmuNWAccessEmuPause},
+    {EMULATION_STOP, EmuNWAccessEmuStop},
+    {EMULATION_RESET, EmuNWAccessEmuReset},
+    {EMULATION_RESUME, EmuNWAccessEmuResume},
+    {EMULATION_RELOAD, EmuNWAccessEmuReload},
+    {MY_NAME_IS, EmuNWAccessSetClientName},
     {LOAD_GAME, EmuNWAccessLoadGame},
     {GAME_INFO, EmuNWAccessGameInfo},
     {CORES_LIST, EmuNWAccessCoreList},
@@ -87,17 +88,19 @@ const generic_emu_nwa_commands_map_t generic_emu_mwa_map = {
     {LOAD_CORE, EmuNWAccessCoreLoad},
     {CORE_MEMORIES, EmuNWAccessCoreMemories},
     {CORE_READ, EmuNWAccessCoreRead},
-    {CORE_WRITE, EmuNWAccessCoreWrite},
+    {bCORE_WRITE, EmuNWAccessCoreWrite},
     {DEBUG_BREAK, EmuNWAccessNop},
     {DEBUG_CONTINUE, EmuNWAccessNop},
     {LOAD_STATE, EmuNWAccessLoadState},
     {SAVE_STATE, EmuNWAccessSaveState}
 };
 
-const unsigned int generic_emu_mwa_map_size = 20;
+const unsigned int generic_emu_mwa_map_size = 21;
 bool(*generic_poll_server_write_function)(SOCKET, char*, uint32_t) = &EmuNWAccessWriteToMemory;
 
+#ifdef _DEBUG 
 #define SKARSNIK_DEBUG 1
+#endif
 #include "emu-nwaccess/emulator-networkaccess/generic poll server/generic_poll_server.c"
 
 struct NetworkAccessInfos NetworkAccessData;
@@ -122,8 +125,8 @@ bool S9xNWAccessInit()
         return (FALSE);
     }
     printf("WSAStartup done\n");
-    NetworkAccessData.messageMutex = CreateMutex(NULL, TRUE, NULL);
-    ReleaseMutex(NetworkAccessData.messageMutex);
+    NetworkAccessData.messageMutex = false;
+    //ReleaseMutex(NetworkAccessData.messageMutex);
 #endif
     generic_poll_server_add_callback(SERVER_STARTED, &EmuNWAccessServerStarted);
     generic_poll_server_add_callback(NEW_CLIENT, &EmuNWAccessNewClient);
@@ -131,6 +134,8 @@ bool S9xNWAccessInit()
     generic_poll_server_add_callback(AFTER_POLL, &EmuNWAccessAfterPoll);
     //create_thread();
     NetworkAccessData.initalized = true;
+
+    //_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_CHECK_ALWAYS_DF | _CRTDBG_LEAK_CHECK_DF);
 
     return true;
 }
@@ -144,6 +149,7 @@ void S9xNWAccessInitData()
     NetworkAccessData.stateDoneMutex = false;
     NetworkAccessData.saveStatePath = nullptr;
     NetworkAccessData.romToLoad = nullptr;
+    NetworkAccessData.messageMutex = false;
     NetworkAccessData.message[0] = 0;
 }
 
@@ -170,7 +176,7 @@ bool	S9xNWAccessStop()
 void	S9xNWAServerLoop(void *)
 {
     fprintf(stdout, "Starting generic server\n");
-    generic_poll_server_start();
+    generic_poll_server_start(50);
 }
 
 bool EmuNWAccessServerStarted(int port)
@@ -202,7 +208,7 @@ bool EmuNWAccessAfterPoll()
     {
         s_debug("Replying to state command\n");
         if (NetworkAccessData.stateError)
-            send_error(NetworkAccessData.stateTriggerClient, "Unable to do the save/load state operation");
+            send_error(NetworkAccessData.stateTriggerClient, command_error, "Unable to do the save/load state operation");
         else
             write(NetworkAccessData.stateTriggerClient, "\n\n", 2);
         NetworkAccessData.stateDoneMutex = false;
@@ -210,7 +216,7 @@ bool EmuNWAccessAfterPoll()
     if (NetworkAccessData.controlCommandDone)
     {
         if (NetworkAccessData.controlError)
-            send_error(NetworkAccessData.controlClient, "Unable to perform the requested control command");
+            send_error(NetworkAccessData.controlClient, command_error, "Unable to perform the requested control command");
         else
             write(NetworkAccessData.controlClient, "\n\n", 2);
         if (NetworkAccessData.command == NetworkAccessControlCommand::CMD_LOAD)
@@ -232,10 +238,7 @@ void S9XSetNWAError(const char * msg)
 
 bool    S9xNWAGuiLoop()
 {
-    DWORD dwWaitResult = WaitForSingleObject(
-        NetworkAccessData.messageMutex,
-        0L);
-    if (dwWaitResult == WAIT_OBJECT_0)
+    if (NetworkAccessData.messageMutex)
     {
         if (NetworkAccessData.message[0] != 0)
         {
@@ -244,7 +247,7 @@ bool    S9xNWAGuiLoop()
             s_debug("Trying to show message to OSD : %s\n", NetworkAccessData.message);
             NetworkAccessData.message[0] = 0;
         }
-        ReleaseMutex(NetworkAccessData.messageMutex);
+        NetworkAccessData.messageMutex = false;
     }
 
     if (NetworkAccessData.stateTriggerMutex)
@@ -358,9 +361,8 @@ void EmuNWAccessNewClient(SOCKET socket)
             auto& client = NetworkAccessData.clients[i];
             client.used = true;
             client.socket = socket;
-            client.MemorySizeToWrite = 0;
-            client.MemorySizeWritten = 0;
             client.MemoryToWrite = nullptr;
+            client.MemoryWriteInfos = NULL;
             client.connected = true;
             EmuNWAccessSetMessage("New client connected");
             return ;
@@ -370,13 +372,10 @@ void EmuNWAccessNewClient(SOCKET socket)
 
 void    EmuNWAccessSetMessage(char* msg)
 {
-    DWORD dwWaitResult = WaitForSingleObject(
-        NetworkAccessData.messageMutex,
-        1000);
-    if (dwWaitResult == WAIT_OBJECT_0)
+    if (!NetworkAccessData.messageMutex)
     {
         strncpy(NetworkAccessData.message, msg, strlen(msg) + 1);
-        ReleaseMutex(NetworkAccessData.messageMutex);
+        NetworkAccessData.messageMutex = true;
     }
 }
 
@@ -384,9 +383,11 @@ void EmuNWAccessRemoveClient(SOCKET socket)
 {
     for (unsigned int i = 0; i < 5; i++)
     {
-        if (NetworkAccessData.clients[i].socket == socket)
-            NetworkAccessData.clients[i].used = true;
-        return ;
+		if (NetworkAccessData.clients[i].socket == socket)
+		{
+			NetworkAccessData.clients[i].used = false;
+			return;
+		}
     }
 }
 
@@ -401,15 +402,46 @@ NetworkAccessClient* EmuNWAccessGetClient(SOCKET socket)
 }
 
 
-bool EmuNWAccessEmuInfo(SOCKET socket, char ** args, int ac)
+int64_t EmuNWAccessSetClientName(SOCKET socket, char **args, int ac)
 {
-    SendFullHashReply(socket, 3, "name", "Snes9x",
-                              "version", "1.60-nwa",
-                              "id", NetworkAccessData.id);
+    NetworkAccessClient* client = EmuNWAccessGetClient(socket);
+    if (ac != 1)
+    {
+        send_error(socket, invalid_argument, "MY_NAME_IS take one argument");
+        return true;
+    }
+    else {
+        strcpy(client->id, args[0]);
+    }
+    SendFullHashReply(socket, 1, "name", client->id);
     return true;
 }
 
-bool EmuNWAccessEmuStatus(SOCKET socket, char ** args, int ac)
+int64_t EmuNWAccessEmuInfo(SOCKET socket, char ** args, int ac)
+{
+    char list_command[2048];
+    memset(list_command, 0, 2048);
+    for (unsigned int i = 0; i < generic_emu_mwa_map_size; i++)
+    {
+        for (unsigned int j = 0; j < emulator_network_access_number_of_command; j++)
+        {
+            if (generic_emu_mwa_map[i].command == emulator_network_access_command_strings[j].command)
+            {
+                strcpy(list_command + strlen(list_command), emulator_network_access_command_strings[j].string);
+                if (i != generic_emu_mwa_map_size - 1)
+                    strcpy(list_command + strlen(list_command), ",");
+            }
+        }
+    }
+    SendFullHashReply(socket, 5, "name", "Snes9x",
+                                 "version", "1.60-nwa",
+                                 "nwa_version", "1.0",
+                                 "id", NetworkAccessData.id,
+                                 "commands", list_command);
+    return 0;
+}
+
+int64_t EmuNWAccessEmuStatus(SOCKET socket, char ** args, int ac)
 {
     StartHashReply(socket);
     if (Settings.Paused)
@@ -428,101 +460,130 @@ bool EmuNWAccessEmuStatus(SOCKET socket, char ** args, int ac)
         SendHashReply(socket, 1, "game", "");
     }
     EndHashReply(socket);
-    return true;
+    return 0;
 }
 
-static bool    DoControlCommand(SOCKET socket, NetworkAccessControlCommand cmd)
+static int64_t    DoControlCommand(SOCKET socket, NetworkAccessControlCommand cmd)
 {
     if (NetworkAccessData.controlCommandDone == false &&
         NetworkAccessData.controlCommandTriggerMutex == true)
     {
-        send_error(socket, "Already doing a control command");
-        return true;
+        send_error(socket, command_error, "Already doing a control command");
+        return 0;
     }
     NetworkAccessData.controlCommandTriggerMutex = true;
     NetworkAccessData.command = cmd;
     NetworkAccessData.controlClient = socket;
-    return true;
+    return 0;
 }
 
-bool EmuNWAccessEmuPause(SOCKET socket, char ** args, int ac)
+int64_t EmuNWAccessEmuPause(SOCKET socket, char ** args, int ac)
 {
     return DoControlCommand(socket, NetworkAccessControlCommand::CMD_PAUSE);
 }
 
-bool EmuNWAccessEmuStop(SOCKET socket, char ** args, int ac)
+int64_t EmuNWAccessEmuStop(SOCKET socket, char ** args, int ac)
 {
     return DoControlCommand(socket, NetworkAccessControlCommand::CMD_STOP);
 }
 
-bool EmuNWAccessEmuReset(SOCKET socket, char ** args, int ac)
+int64_t EmuNWAccessEmuReset(SOCKET socket, char ** args, int ac)
 {
     return DoControlCommand(socket, NetworkAccessControlCommand::CMD_RESET);
 }
 
-bool EmuNWAccessEmuResume(SOCKET socket, char ** args, int ac)
+int64_t EmuNWAccessEmuResume(SOCKET socket, char ** args, int ac)
 {
     return DoControlCommand(socket, NetworkAccessControlCommand::CMD_RESUME);
 }
 
-bool EmuNWAccessEmuReload(SOCKET socket, char ** args, int ac)
+int64_t EmuNWAccessEmuReload(SOCKET socket, char ** args, int ac)
 {
     return DoControlCommand(socket, NetworkAccessControlCommand::CMD_RELOAD);
 }
 
-bool EmuNWAccessLoadGame(SOCKET socket, char ** args, int ac)
+int64_t EmuNWAccessLoadGame(SOCKET socket, char ** args, int ac)
 {
     DoControlCommand(socket, NetworkAccessControlCommand::CMD_LOAD);
     NetworkAccessData.romToLoad = (char*) malloc(strlen(args[0]) + 1);
     strcpy(NetworkAccessData.romToLoad, args[0]);
-    return true;
+    return 0;
 }
 
-bool EmuNWAccessGameInfo(SOCKET socket, char ** args, int ac)
+int64_t EmuNWAccessGameInfo(SOCKET socket, char ** args, int ac)
 {
     SendFullHashReply(socket, 5, "name", Memory.ROMName,
                              "file", Memory.ROMFilename,
                              "region", Memory.Country(),
                              "type", Memory.MapType(),
                              "video-ouput", (Memory.ROMRegion > 12 || Memory.ROMRegion < 2) ? "NTSC 60Hz" : "PAL 50Hz");
-    return true;
+    return 0;
 }
 
-bool EmuNWAccessCoreList(SOCKET socket, char ** args, int ac)
+int64_t EmuNWAccessCoreList(SOCKET socket, char ** args, int ac)
 {
-   SendFullHashReply(socket, 2, "name", "snes9x", 
-                                "platform", "SNES");
-   return true;
+    if (ac == 0 || (ac == 1 && strcmp(args[0], "SNES") == 0))
+    {
+        SendFullHashReply(socket, 2, "name", "snes9x",
+            "platform", "SNES");
+    }
+    else {
+        write(socket, "\n\n", 2);
+    }
+    return 0;
 }
 
-bool EmuNWAccessCoreInfo(SOCKET socket, char ** args, int ac)
+int64_t EmuNWAccessCoreInfo(SOCKET socket, char ** args, int ac)
 {
-    SendFullHashReply(socket, 3, "name", "snes9x",
-                                 "version", VERSION,
-                                 "platform", "SNES");
-    return true;
+    if (ac == 0 || (ac == 1 && strcmp(args[0], "snes9x") == 0))
+    {
+        SendFullHashReply(socket, 3, "name", "snes9x",
+            "version", VERSION,
+            "platform", "SNES");
+    } else {
+        send_error(socket, invalid_argument, "The specified core does not exists, only snes9x core exists");
+    }
+    return 0;
 }
 
-bool EmuNWAccessCoreCurrentInfo(SOCKET socket, char ** args, int ac)
+int64_t EmuNWAccessCoreCurrentInfo(SOCKET socket, char ** args, int ac)
 {
     return EmuNWAccessCoreInfo(socket, args, ac);
 }
 
-bool EmuNWAccessCoreLoad(SOCKET socket, char ** args, int ac)
+int64_t EmuNWAccessCoreLoad(SOCKET socket, char ** args, int ac)
 {
-    return false;
+    return -1;
 }
 
-bool EmuNWAccessCoreMemories(SOCKET socket, char ** args, int ac)
+static unsigned int getMemorySize(const char* mem)
 {
-    SendFullHashReply(socket, 4 * 2, "name", "WRAM", "access", "rw",
-                                     "name", "SRAM", "access", "rw",
-                                     "name", "CARTROM", "access", "rw",
-                                     "name", "VRAM", "access", "rw");
-    return true;
+    if (strcmp(mem, "WRAM") == 0)
+        return 0x20000;
+    if (strcmp(mem, "SRAM") == 0)
+        return Memory.SRAMSize;
+    if (strcmp(mem, "CARTROM") == 0)
+        return Memory.ROMSize;
+    if (strcmp(mem, "VRAM") == 0)
+        return 0x10000;
 }
 
-bool EmuNWAccessCoreRead(SOCKET socket, char ** args, int ac)
+
+int64_t EmuNWAccessCoreMemories(SOCKET socket, char ** args, int ac)
+{
+    char buf[100];
+    sprintf(buf, "%d", getMemorySize("WRAM"));
+    sprintf(buf + 20, "%d", getMemorySize("SRAM"));
+    sprintf(buf + 40, "%d", getMemorySize("CARTROM"));
+    sprintf(buf + 60, "%d", getMemorySize("VRAM"));
+    SendFullHashReply(socket, 4 * 3, "name", "WRAM", "access", "rw", "size", (char*)buf,
+                                     "name", "SRAM", "access", "rw", "size", (char*)(buf + 20),
+                                     "name", "CARTROM", "access", "rw", "size", (char*)(buf + 40),
+                                     "name", "VRAM", "access", "rw", "size", (char*)(buf + 60));
+    return 0;
+}
+
+int64_t EmuNWAccessCoreRead(SOCKET socket, char ** args, int ac)
 {
     uint8* to_read = NULL;
     if (strcmp(args[0],"WRAM") == 0)
@@ -535,57 +596,81 @@ bool EmuNWAccessCoreRead(SOCKET socket, char ** args, int ac)
         to_read = Memory.VRAM;
     if (to_read == NULL)
     {
-        send_error(socket, "No matching Memory Domain name");
-        return false;
+        send_error(socket, command_error, "No matching Memory Domain name");
+        return 0;
     }
-    size_t offset = generic_poll_server_get_offset(args[1]);
-    uint32_t size = atoi(args[2]);
-    write(socket, "\0", 1);
-    uint32_t network_size = htonl(size);
-    write(socket, (const char*)&network_size, 4);
-    write(socket, (const char*)to_read + offset, size);
-    return true;
+    if (ac == 1)
+    {
+        generic_poll_server_send_binary_block(socket, getMemorySize(args[0]), (const char*)to_read);
+        return 0;
+    }
+    if (ac > 3 && ac % 2 != 1)
+    {
+        send_error(socket, invalid_argument, "You can't only ommit the size of a single write");
+        return 0;
+    }
+    generic_poll_server_memory_argument*    pargs = generic_poll_server_parse_memory_argument(args + 1, ac - 1);
+    generic_poll_server_memory_argument* cur = pargs;
+    uint32_t total_size = 0;
+    while (cur != NULL)
+    {
+        total_size += cur->size;
+        if (cur->size == 0)
+        {
+            if (ac == 2)
+            {
+                cur->size = getMemorySize(args[0]) - cur->offset;
+            } else {
+                send_error(socket, invalid_argument, "0 size is invalid");
+                generic_poll_server_free_memory_argument(pargs);
+                return 0;
+            }
+            total_size += getMemorySize(args[0]) - cur->offset;
+        }
+        cur = cur->next;
+    }
+    s_debug("Preparting to read core %d bytes from %s\n", total_size, args[0]);
+    char header[5];
+    header[0] = 0;
+    uint32_t network_size = htonl(total_size);
+    memcpy(header + 1, (void*)&network_size, 4);
+    //s_debug("Header : %s", hexString(header, 5));
+    write(socket, header, 5);
+    cur = pargs;
+    while (cur != NULL)
+    {
+        unsigned int size = cur->size;
+        if (size == 0)
+            size = getMemorySize(args[0]) - cur->offset;
+        write(socket, (const char*)to_read + cur->offset, size);
+        cur = cur->next;
+    }
+    generic_poll_server_free_memory_argument(pargs);
+    return 0;
 }
 
 bool EmuNWAccessWriteToMemory(SOCKET socket, char* data, uint32_t size)
 {
-    static bool size_header_get = false;
-
     auto client = EmuNWAccessGetClient(socket);
-    s_debug("write_to_memory : %d, %s\n", size, hexString(data, size));
-    if (size_header_get == false)
-    {
-        uint32_t header_size = ntohl(*((uint32_t*)data));
-        if (client->MemorySizeToWrite != 0 && header_size != client->MemorySizeToWrite)
-        {
-            // this is an error
-        }
-        client->MemorySizeToWrite = header_size;
-        s_debug("wtm: ntohl: %d\n", client->MemorySizeToWrite);
-        data += 4;
-        size -= 4;
-        size_header_get = true;
-    }
     if (size == 0)
         return false;
-    memcpy(client->MemoryToWrite + client->MemoryOffsetToWrite, data, size);
-    client->MemorySizeWritten += size;
-    s_debug("Writing to memory : %d - %d/%d\n", size, client->MemorySizeWritten, client->MemorySizeWritten);
-    if (client->MemorySizeWritten == client->MemorySizeWritten)
+    generic_poll_server_memory_argument* infos = client->MemoryWriteInfos;
+    uint32_t offsetInData = 0;
+    while (infos != NULL)
     {
-        s_debug("Done Writing to memory\n");
-        client->MemorySizeToWrite = 0;
-        client->MemorySizeWritten = 0;
-        client->MemoryOffsetToWrite = 0;
-        client->MemoryToWrite = NULL;
-        size_header_get = false;
-        write(socket, "\n\n", 2);
-        return true;
+        memcpy(client->MemoryToWrite + infos->offset, data + offsetInData, infos->size);
+        offsetInData += infos->size;
+        infos = infos->next;
     }
-    return false;
+    generic_poll_server_free_memory_argument(client->MemoryWriteInfos);
+    client->MemoryWriteInfos = NULL;
+    s_debug("Done Writing to memory\n");
+    client->MemoryToWrite = NULL;
+    write(socket, "\n\n", 2);
+    return true;
 }
 
-bool EmuNWAccessCoreWrite(SOCKET socket, char ** args, int ac)
+int64_t EmuNWAccessCoreWrite(SOCKET socket, char ** args, int ac)
 {
     s_debug("Core Write  : %s - arg count : %d\n", args[0], ac);
     uint8* to_read = NULL;
@@ -599,28 +684,55 @@ bool EmuNWAccessCoreWrite(SOCKET socket, char ** args, int ac)
         to_read = Memory.VRAM;
     if (to_read == NULL)
     {
-        send_error(socket, "No matching Memory Domain name");
-        return false;
+        send_error(socket, command_error, "No matching Memory Domain name");
+        return -1;
     }
-    size_t offset = generic_poll_server_get_offset(args[1]);
     auto client = EmuNWAccessGetClient(socket);
-    client->MemorySizeToWrite = 0;
-    if (ac == 3)
-    {
-        client->MemorySizeToWrite = atoi(args[2]);
-    }
-    client->MemorySizeWritten = 0;
     client->MemoryToWrite = to_read;
-    client->MemoryOffsetToWrite = offset;
-    return true;
+    if (ac == 1)
+    {
+        client->MemoryWriteInfos = (generic_poll_server_memory_argument*)malloc(sizeof(generic_poll_server_memory_argument));
+        client->MemoryWriteInfos->next = NULL;
+        client->MemoryWriteInfos->offset = 0;
+        client->MemoryWriteInfos->size = getMemorySize(args[0]);
+        return client->MemoryWriteInfos->size;
+    }
+    // IF we have a missing size
+    if (ac > 3 && ac % 2 != 1)
+    {
+        send_error(socket, invalid_argument, "You can't only ommit the size of a single write");
+        return -1;
+    }
+    generic_poll_server_memory_argument* pargs = generic_poll_server_parse_memory_argument(args + 1, ac - 1);
+    generic_poll_server_memory_argument* cur = pargs;
+    // Checking arguments and fixing size when missing
+    uint32_t total_size = 0;
+    while (cur != NULL)
+    {
+        if (cur->size == 0)
+        {
+            if (ac == 2)
+            {
+                cur->size = getMemorySize(args[0]) - cur->offset;
+            } else {
+                send_error(socket, invalid_argument, "0 size is invalid");
+                generic_poll_server_free_memory_argument(pargs);
+                return -1;
+            }
+        }
+        total_size += cur->size;
+        cur = cur->next;
+    }
+    client->MemoryWriteInfos = pargs;
+    return total_size;
 }
 
-bool EmuNWAccessNop(SOCKET socket, char ** args, int ac)
+int64_t EmuNWAccessNop(SOCKET socket, char ** args, int ac)
 {
     return false;
 }
 
-bool EmuNWAccessLoadState(SOCKET socket, char ** args, int ac)
+int64_t EmuNWAccessLoadState(SOCKET socket, char ** args, int ac)
 {
     NetworkAccessData.stateTriggerMutex = true;
     NetworkAccessData.saveStatePath = (char*)malloc(strlen(args[0]) + 1);
@@ -630,7 +742,7 @@ bool EmuNWAccessLoadState(SOCKET socket, char ** args, int ac)
     return true;
 }
 
-bool EmuNWAccessSaveState(SOCKET socket, char ** args, int ac)
+int64_t EmuNWAccessSaveState(SOCKET socket, char ** args, int ac)
 {
     NetworkAccessData.stateTriggerMutex = true;
     NetworkAccessData.saveStatePath = (char*)malloc(strlen(args[0]) + 1);
