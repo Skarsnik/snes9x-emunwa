@@ -18,16 +18,16 @@ enum class NetworkAccessControlCommand {
     CMD_LOAD
 };
 
+#include "emulator-networkaccess/generic poll server/generic_poll_server.h"
+
 struct NetworkAccessClient {
     SOCKET      socket;
     bool        used = false;
-    char*       id;
+    char        id[512];
     bool        connected;
     
     uint8*      MemoryToWrite;
-    uint32_t    MemorySizeToWrite;
-    uint32_t    MemorySizeWritten;
-    uint32_t    MemoryOffsetToWrite;
+    generic_poll_server_memory_argument* MemoryWriteInfos;
 };
 
 struct NetworkAccessInfos {
@@ -53,7 +53,7 @@ struct NetworkAccessInfos {
     bool                        controlError;
 
     std::atomic_bool    stopRequest;
-    HANDLE          messageMutex;
+    std::atomic_bool    messageMutex;
     char            message[512];
     uintptr_t       thread;
     char*           id;
@@ -79,22 +79,23 @@ bool    EmuNWAccessWriteToMemory(SOCKET socket, char* data, uint32_t);
 void    EmuNWAccessNewClient(SOCKET socket);
 void    EmuNWAccessRemoveClient(SOCKET socket);
 
-bool    EmuNWAccessEmuInfo(SOCKET socket, char **args, int ac);
-bool    EmuNWAccessEmuStatus(SOCKET socket, char **args, int ac);
-bool    EmuNWAccessEmuPause(SOCKET socket, char **args, int ac);
-bool    EmuNWAccessEmuStop(SOCKET socket, char **args, int ac);
-bool    EmuNWAccessEmuReset(SOCKET socket, char **args, int ac);
-bool    EmuNWAccessEmuResume(SOCKET socket, char **args, int ac);
-bool    EmuNWAccessEmuReload(SOCKET socket, char **args, int ac);
-bool    EmuNWAccessLoadGame(SOCKET socket, char **args, int ac);
-bool    EmuNWAccessGameInfo(SOCKET socket, char **args, int ac);
-bool    EmuNWAccessCoreList(SOCKET socket, char **args, int ac);
-bool    EmuNWAccessCoreInfo(SOCKET socket, char **args, int ac);
-bool    EmuNWAccessCoreCurrentInfo(SOCKET socket, char **args, int ac);
-bool    EmuNWAccessCoreLoad(SOCKET socket, char **args, int ac);
-bool    EmuNWAccessCoreMemories(SOCKET socket, char **args, int ac);
-bool    EmuNWAccessCoreRead(SOCKET socket, char **args, int ac);
-bool    EmuNWAccessCoreWrite(SOCKET socket, char **args, int ac);
-bool    EmuNWAccessNop(SOCKET socket, char **args, int ac);
-bool    EmuNWAccessLoadState(SOCKET socket, char **args, int ac);
-bool    EmuNWAccessSaveState(SOCKET socket, char **args, int ac);
+int64_t    EmuNWAccessSetClientName(SOCKET socket, char **args, int ac);
+int64_t    EmuNWAccessEmuInfo(SOCKET socket, char **args, int ac);
+int64_t    EmuNWAccessEmuStatus(SOCKET socket, char **args, int ac);
+int64_t    EmuNWAccessEmuPause(SOCKET socket, char **args, int ac);
+int64_t    EmuNWAccessEmuStop(SOCKET socket, char **args, int ac);
+int64_t    EmuNWAccessEmuReset(SOCKET socket, char **args, int ac);
+int64_t    EmuNWAccessEmuResume(SOCKET socket, char **args, int ac);
+int64_t    EmuNWAccessEmuReload(SOCKET socket, char **args, int ac);
+int64_t    EmuNWAccessLoadGame(SOCKET socket, char **args, int ac);
+int64_t    EmuNWAccessGameInfo(SOCKET socket, char **args, int ac);
+int64_t    EmuNWAccessCoreList(SOCKET socket, char **args, int ac);
+int64_t    EmuNWAccessCoreInfo(SOCKET socket, char **args, int ac);
+int64_t    EmuNWAccessCoreCurrentInfo(SOCKET socket, char **args, int ac);
+int64_t    EmuNWAccessCoreLoad(SOCKET socket, char **args, int ac);
+int64_t    EmuNWAccessCoreMemories(SOCKET socket, char **args, int ac);
+int64_t    EmuNWAccessCoreRead(SOCKET socket, char **args, int ac);
+int64_t    EmuNWAccessCoreWrite(SOCKET socket, char **args, int ac);
+int64_t    EmuNWAccessNop(SOCKET socket, char **args, int ac);
+int64_t    EmuNWAccessLoadState(SOCKET socket, char **args, int ac);
+int64_t    EmuNWAccessSaveState(SOCKET socket, char **args, int ac);
