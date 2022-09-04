@@ -117,6 +117,8 @@ VOID CALLBACK HotkeyTimer( UINT idEvent, UINT uMsg, DWORD dwUser, DWORD dw1, DWO
 
 void S9xDetectJoypads();
 
+void S9xWinScanJoypads();
+
 #define NOTKNOWN "Unknown Company "
 #define HEADER_SIZE 512
 #define INFO_LEN (0xFF - 0xC0)
@@ -943,7 +945,7 @@ int HandleKeyMessage(WPARAM wParam, LPARAM lParam)
 		&& modifiers == CustomKeys.FrameAdvance.modifiers)
 		{
 			static DWORD lastTime = 0;
-			if((int)(timeGetTime() - lastTime) > 20)
+			if((timeGetTime() - lastTime) > 20)
 			{
 				lastTime = timeGetTime();
 				if(Settings.Paused || GUI.FASkipsNonInput)
@@ -2742,6 +2744,10 @@ VOID CALLBACK HotkeyTimer( UINT idEvent, UINT uMsg, DWORD dwUser, DWORD dw1, DWO
 
 		if(GUI.JoystickHotkeys)
 		{
+			if (Settings.StopEmulation || (Settings.Paused && !Settings.FrameAdvance) || Settings.ForcedPause)
+			{
+				S9xWinScanJoypads();
+			}
 			static int counter = 0;
 			static uint32 joyState[6][53];
             for(int j = 0 ; j < 6 ; j++)
@@ -3281,7 +3287,6 @@ void ControlPadFlagsToS9xPseudoPointer(uint32 p)
 
 static void ProcessInput(void)
 {
-	extern void S9xWinScanJoypads ();
 #ifdef NETPLAY_SUPPORT
     if (!Settings.NetPlay)
 #endif
@@ -8118,7 +8123,6 @@ updateFilterBox2:
 				//UpdateScale(GUI.Scale, prevScale);
 				GUI.Scale = (RenderFilter)prevScale;
 				GUI.ScaleHiRes = (RenderFilter)prevScaleHiRes;
-				GFX.RealPPL = prevPPL;
 				GUI.Stretch = prevStretch;
 				Settings.AutoDisplayMessages = prevAutoDisplayMessages;
 				Settings.BilinearFilter = prevBilinearFilter;
@@ -8629,7 +8633,7 @@ switch(msg)
 			break;
 		}
 
-        if(which >= IDC_HOTKEY1 && which <= IDC_HOTKEY13)
+        if(which >= IDC_HOTKEY1 && which <= IDC_HOTKEY14)
         {
             int offset = which - IDC_HOTKEY1;
             hotkey_dialog_items[index][offset].key_entry->key = wParam;
