@@ -33,11 +33,11 @@ void snes9x_preferences_open(Snes9xWindow *window)
 
     preferences->window->set_transient_for(*window->window.get());
 
-    config->set_joystick_mode(JOY_MODE_GLOBAL);
+    config->joysticks.set_mode(JOY_MODE_GLOBAL);
     preferences->show();
     window->unpause_from_focus_change();
 
-    config->set_joystick_mode(JOY_MODE_INDIVIDUAL);
+    config->joysticks.set_mode(JOY_MODE_INDIVIDUAL);
 
     config->rebind_keys();
     window->update_accelerators();
@@ -50,22 +50,23 @@ gboolean poll_joystick(gpointer data)
     Binding binding;
     int focus;
 
-    for (size_t i = 0; i < window->config->joystick.size(); i++)
+    window->config->joysticks.poll_events();
+    for (auto &j : window->config->joysticks)
     {
-        while (window->config->joystick[i].get_event(&event))
+        while (j.second->get_event(&event))
         {
             if (event.state == JOY_PRESSED)
             {
                 if ((focus = window->get_focused_binding()) >= 0)
                 {
-                    binding = Binding(i,
+                    binding = Binding(j.second->joynum,
                                       event.parameter,
                                       window->config->joystick_threshold);
 
                     window->store_binding(b_links[focus].button_name,
                                           binding);
 
-                    window->config->flush_joysticks();
+                    window->config->joysticks.flush_events();
                     return true;
                 }
             }
@@ -151,19 +152,10 @@ Snes9xPreferences::Snes9xPreferences(Snes9xConfig *config)
         combo_box_append("hw_accel",
                          _("XVideo - Use hardware video blitter"));
 
-#ifdef USE_PORTAUDIO
-    combo_box_append("sound_driver", _("PortAudio"));
-#endif
-#ifdef USE_OSS
-    combo_box_append("sound_driver", _("Open Sound System"));
-#endif
-    combo_box_append("sound_driver", _("SDL"));
-#ifdef USE_ALSA
-    combo_box_append("sound_driver", _("ALSA"));
-#endif
-#ifdef USE_PULSEAUDIO
-    combo_box_append("sound_driver", _("PulseAudio"));
-#endif
+    for (auto &name : config->sound_drivers)
+    {
+        combo_box_append("sound_driver", name.c_str());
+    }
 }
 
 Snes9xPreferences::~Snes9xPreferences ()
@@ -341,7 +333,6 @@ bool Snes9xPreferences::key_pressed(GdkEventKey *event)
 
 void Snes9xPreferences::shader_select()
 {
-#ifdef USE_OPENGL
     auto entry = get_object<Gtk::Entry>("fragment_shader");
 
     auto dialog = Gtk::FileChooserDialog(*window.get(), _("Select Shader File"));
@@ -365,7 +356,6 @@ void Snes9xPreferences::shader_select()
         if (!filename.empty())
             entry->set_text(filename);
     }
-#endif
 }
 
 void Snes9xPreferences::load_ntsc_settings()
@@ -463,24 +453,6 @@ void Snes9xPreferences::move_settings_to_dialog()
     set_combo ("splash_background",         config->splash_image);
     set_check ("force_enable_icons",        config->enable_icons);
 
-    int num_sound_drivers = 0;
-#ifdef USE_PORTAUDIO
-    num_sound_drivers++;
-#endif
-#ifdef USE_OSS
-    num_sound_drivers++;
-#endif
-    num_sound_drivers++; // SDL is automatically there.
-#ifdef USE_ALSA
-    num_sound_drivers++;
-#endif
-#ifdef USE_PULSEAUDIO
-    num_sound_drivers++;
-#endif
-
-    if (config->sound_driver >= num_sound_drivers)
-        config->sound_driver = 0;
-
     set_combo ("sound_driver",              config->sound_driver);
 
     show_widget("ntsc_alignment", config->scale_method == FILTER_NTSC);
@@ -493,7 +465,6 @@ void Snes9xPreferences::move_settings_to_dialog()
     set_combo ("frameskip_combo",           Settings.SkipFrames);
     set_check ("bilinear_filter",           Settings.BilinearFilter);
 
-#ifdef USE_OPENGL
     set_check ("sync_to_vblank",            config->sync_to_vblank);
     set_check ("use_glfinish",              config->use_glfinish);
     set_check ("use_sync_control",          config->use_sync_control);
@@ -502,7 +473,7 @@ void Snes9xPreferences::move_settings_to_dialog()
     set_check ("npot_textures",             config->npot_textures);
     set_check ("use_shaders",               config->use_shaders);
     set_entry_text ("fragment_shader",      config->shader_filename.c_str ());
-#endif
+
     set_spin ("joystick_threshold",         config->joystick_threshold);
 
     /* Control bindings */
@@ -657,7 +628,6 @@ void Snes9xPreferences::get_settings_from_dialog()
     Settings.InterpolationMethod = get_combo("sound_filter");
 #endif
 
-#ifdef USE_OPENGL
     int pbo_format = get_combo("pixel_format") == 1 ? 32 : 16;
 
     if (config->sync_to_vblank   != get_check("sync_to_vblank") ||
@@ -679,7 +649,6 @@ void Snes9xPreferences::get_settings_from_dialog()
     config->use_sync_control = get_check("use_sync_control");
     config->shader_filename  = get_entry_text ("fragment_shader");
     config->pbo_format       = pbo_format;
-#endif
 
     std::string new_sram_directory = get_entry_text("sram_directory");
     config->savestate_directory = get_entry_text("savestate_directory");
@@ -956,27 +925,26 @@ void Snes9xPreferences::clear_binding(const char *name)
 
 void Snes9xPreferences::bindings_to_dialog(int joypad)
 {
-    char name[256];
     Binding *bindings = (Binding *)&pad[joypad].data;
 
     set_combo("control_combo", joypad);
 
     for (int i = 0; i < NUM_JOYPAD_LINKS; i++)
     {
-        bindings[i].to_string(name);
-        set_entry_text(b_links[i].button_name, name);
+        set_entry_text(b_links[i].button_name, bindings[i].as_string().c_str());
     }
 
-    for (int i = NUM_JOYPAD_LINKS; b_links[i].button_name; i++)
+    auto shortcut_names = &b_links[NUM_JOYPAD_LINKS];
+
+    for (int i = 0; shortcut_names[i].button_name; i++)
     {
-        shortcut[i - NUM_JOYPAD_LINKS].to_string(name);
-        set_entry_text(b_links[i].button_name, name);
+        set_entry_text(shortcut_names[i].button_name, shortcut[i].as_string().c_str());
     }
 }
 
 void Snes9xPreferences::calibration_dialog()
 {
-    config->joystick_register_centers();
+    config->joysticks.register_centers();
     auto dialog = Gtk::MessageDialog(_("Current joystick centers have been saved."));
     dialog.set_title(_("Calibration Complete"));
     dialog.run();

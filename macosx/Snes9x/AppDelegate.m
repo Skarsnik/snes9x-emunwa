@@ -20,6 +20,7 @@
 
 #import <Carbon/Carbon.h>
 #import "AppDelegate.h"
+#import "S9xPreferencesConstants.h"
 
 NSWindowFrameAutosaveName const kMainWindowIdentifier = @"s9xMainWindow";
 
@@ -107,9 +108,18 @@ NSWindowFrameAutosaveName const kMainWindowIdentifier = @"s9xMainWindow";
             @(kKeyEsc).stringValue : @(kVK_Escape),
             @(kKeyTC).stringValue : @(kVK_ANSI_Comma)
         },
-        kShowFPSPref: @(NO),
-        kVideoModePref:@(VIDEOMODE_BLOCKY),
-        kMacFrameSkipPref:@(macFrameSkip)
+        kShowFPSPref : @(NO),
+        kVideoModePref : @(VIDEOMODE_BLOCKY),
+        kMacFrameSkipPref : @(macFrameSkip),
+
+        kSuperFXClockSpeedPercentPref : @(100),
+        kSoundInterpolationTypePref: @(2),
+        kCPUOverclockPref : @(0),
+
+        kApplyGameSpecificHacksPref : (@YES),
+        kAllowInvalidVRAMAccessPref : @(NO),
+        kSeparateEchoBufferFromRAMPref : @(NO),
+        kDisableSpriteLimitPref : @(NO),
     };
 
     [defaults registerDefaults:defaultSettings];
@@ -179,8 +189,11 @@ NSWindowFrameAutosaveName const kMainWindowIdentifier = @"s9xMainWindow";
         }
     }
 
+	self.deviceSetting = Gamepads;
+
     [self importKeySettings];
     [self importGraphicsSettings];
+    [self applyEmulationSettings];
     [defaults synchronize];
 }
 
@@ -210,7 +223,7 @@ NSWindowFrameAutosaveName const kMainWindowIdentifier = @"s9xMainWindow";
 {
     [self.s9xEngine clearButton:button forPlayer:player];
     NSMutableDictionary *keyDict = [[NSUserDefaults.standardUserDefaults objectForKey:kKeyboardPrefs] mutableCopy];
-    [keyDict removeObjectForKey:@(button).stringValue];
+    [keyDict removeObjectForKey:@(button + (kNumButtons * player)).stringValue];
     [NSUserDefaults.standardUserDefaults setObject:[keyDict copy] forKey:kKeyboardPrefs];
     [NSUserDefaults.standardUserDefaults synchronize];
 }
@@ -465,6 +478,9 @@ NSWindowFrameAutosaveName const kMainWindowIdentifier = @"s9xMainWindow";
 	if (action == @selector(resume:) || action == @selector(softwareReset:) || action == @selector(hardwareReset:)) {
 		return [self.s9xEngine isRunning] && [self.s9xEngine isPaused];
 	}
+	else if (action == @selector(updateDeviceSetting:)) {
+		menuItem.state = (self.deviceSetting == (S9xDeviceSetting)menuItem.tag) ? NSOnState : NSOffState;
+	}
 
     return !self.isRunningEmulation;
 }
@@ -514,6 +530,21 @@ NSWindowFrameAutosaveName const kMainWindowIdentifier = @"s9xMainWindow";
     [NSUserDefaults.standardUserDefaults synchronize];
 }
 
+- (void)applyEmulationSettings
+{
+    S9xEngine *engine = self.s9xEngine;
+    NSUserDefaults *defaults = NSUserDefaults.standardUserDefaults;
+
+    [engine setSuperFXClockSpeedPercent:(uint32_t)[defaults integerForKey:kSuperFXClockSpeedPercentPref]];
+    [engine setSoundInterpolationType:(int)[defaults integerForKey:kSoundInterpolationTypePref]];
+    [engine setCPUOverclockMode:(int)[defaults integerForKey:kCPUOverclockPref]];
+
+    [engine setApplySpecificGameHacks:[defaults boolForKey:kApplyGameSpecificHacksPref]];
+    [engine setAllowInvalidVRAMAccess:[defaults boolForKey:kAllowInvalidVRAMAccessPref]];
+    [engine setSeparateEchoBufferFromRAM:[defaults boolForKey:kSeparateEchoBufferFromRAMPref]];
+    [engine setDisableSpriteLimit:[defaults boolForKey:kDisableSpriteLimitPref]];
+}
+
 - (IBAction)resume:(id)sender
 {
     [self.s9xEngine resume];
@@ -529,14 +560,31 @@ NSWindowFrameAutosaveName const kMainWindowIdentifier = @"s9xMainWindow";
 	[self.s9xEngine hardwareReset];
 }
 
+- (IBAction)updateDeviceSetting:(id)sender
+{
+	self.deviceSetting = (S9xDeviceSetting)[sender tag];
+}
+
+- (void)setDeviceSetting:(S9xDeviceSetting)deviceSetting
+{
+	_deviceSetting = deviceSetting;
+	[self.s9xEngine setDeviceSetting:deviceSetting];
+}
+
 - (BOOL)handleInput:(S9xJoypadInput *)input fromJoypad:(S9xJoypad *)joypad
 {
     if (NSApp.keyWindow != nil && NSApp.keyWindow == self.preferencesWindowController.window)
     {
-        return [((S9xPreferencesWindowController *) self.preferencesWindowController.contentViewController) handleInput:input fromJoypad:joypad];
+        return [((S9xPreferencesWindowController *) self.preferencesWindowController) handleInput:input fromJoypad:joypad];
     }
 
     return NO;
 }
+
+- (void)deviceSettingChanged:(S9xDeviceSetting)deviceSetting
+{
+    _deviceSetting = deviceSetting;
+}
+
 
 @end

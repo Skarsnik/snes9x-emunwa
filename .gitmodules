@@ -8,11 +8,14 @@
 	path = win32/DirectXMath
 	url = https://github.com/Microsoft/DirectXMath
 [submodule "shaders/SPIRV-Cross"]
-	path = shaders/SPIRV-Cross
+	path = external/SPIRV-Cross
 	url = https://github.com/KhronosGroup/SPIRV-Cross.git
 [submodule "shaders/glslang"]
-	path = shaders/glslang
+	path = external/glslang
 	url = https://github.com/KhronosGroup/glslang.git
 [submodule "emu-nwaccess/emulator-networkaccess"]
 	path = emu-nwaccess/emulator-networkaccess
 	url = https://github.com/usb2snes/emulator-networkaccess.git
+[submodule "vulkan/vulkan"]
+	path = external/vulkan-headers
+	url = https://github.com/KhronosGroup/Vulkan-Headers.git

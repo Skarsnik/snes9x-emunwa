@@ -34,6 +34,7 @@
 #include "movie.h"
 #include "display.h"
 #include "sha256.h"
+#include "snapshot.h"
 
 #ifndef SET_UI_COLOR
 #define SET_UI_COLOR(r, g, b) ;
@@ -893,6 +894,8 @@ static void S9xDeinterleaveGD24 (int size, uint8 *base)
 
 bool8 CMemory::Init (void)
 {
+	// TODO: If these change size, check other locations in the code that also
+	// have the fixed size. In the future, make this a static allocation.
     RAM	 = (uint8 *) malloc(0x20000);
     SRAM = (uint8 *) malloc(0x80000);
     VRAM = (uint8 *) malloc(0x10000);
@@ -1103,6 +1106,11 @@ int CMemory::ScoreHiROM (bool8 skip_header, int32 romoff)
 {
 	uint8	*buf = ROM + 0xff00 + romoff + (skip_header ? 0x200 : 0);
 	int		score = 0;
+
+	// Check for extended HiROM expansion used in Mother 2 Deluxe et al.
+	// Looks for size byte 13 (8MB) and an actual ROM size greater than 4MB
+	if (buf[0xd7] == 13 && CalculatedSize > 1024 * 1024 * 4)
+		score += 5;
 
 	if (buf[0xd5] & 0x1)
 		score += 2;
@@ -1390,6 +1398,8 @@ bool8 CMemory::LoadROM (const char *filename)
     if(!filename || !*filename)
         return FALSE;
 
+    S9xResetSaveTimer(FALSE); // reset oops timer here so that .oops file has rom name of previous rom
+
     int32 totalFileSize;
 
     do
@@ -1665,6 +1675,8 @@ bool8 CMemory::LoadMultiCartMem (const uint8 *sourceA, uint32 sourceASize,
 
 bool8 CMemory::LoadMultiCart (const char *cartA, const char *cartB)
 {
+    S9xResetSaveTimer(FALSE); // reset oops timer here so that .oops file has rom name of previous rom
+
     memset(ROM, 0, MAX_ROM_SIZE);
 	memset(&Multi, 0, sizeof(Multi));
 
@@ -1910,8 +1922,8 @@ void CMemory::ClearSRAM (bool8 onlyNonSavedSRAM)
 	if (onlyNonSavedSRAM)
 		if (!(Settings.SuperFX && ROMType < 0x15) && !(Settings.SA1 && ROMType == 0x34)) // can have SRAM
 			return;
-
-	memset(SRAM, SNESGameFixes.SRAMInitialValue, 0x20000);
+	// TODO: If SRAM size changes change this value as well
+	memset(SRAM, SNESGameFixes.SRAMInitialValue, 0x80000);
 }
 
 bool8 CMemory::LoadSRAM (const char *filename)
@@ -1946,15 +1958,17 @@ bool8 CMemory::LoadSRAM (const char *filename)
 	}
 
 	size = SRAMSize ? (1 << (SRAMSize + 3)) * 128 : 0;
-	if (size > 0x20000)
-		size = 0x20000;
+	if (LoROM)
+		size = size < 0x70000 ? size : 0x70000;
+	else if (HiROM)
+		size = size < 0x40000 ? size : 0x40000;
 
 	if (size)
 	{
 		file = fopen(sramName, "rb");
 		if (file)
 		{
-			len = fread((char *) SRAM, 1, 0x20000, file);
+			len = fread((char *) SRAM, 1, size, file);
 			fclose(file);
 			if (len - size == 512)
 				memmove(SRAM, SRAM + 512, size);
@@ -1978,7 +1992,7 @@ bool8 CMemory::LoadSRAM (const char *filename)
 			file = fopen(path, "rb");
 			if (file)
 			{
-				len = fread((char *) SRAM, 1, 0x20000, file);
+				len = fread((char *) SRAM, 1, size, file);
 				fclose(file);
 				if (len - size == 512)
 					memmove(SRAM, SRAM + 512, size);
@@ -2035,8 +2049,10 @@ bool8 CMemory::SaveSRAM (const char *filename)
     }
 
     size = SRAMSize ? (1 << (SRAMSize + 3)) * 128 : 0;
-	if (size > 0x20000)
-		size = 0x20000;
+	if (LoROM)
+		size = size < 0x70000 ? size : 0x70000;
+	else if (HiROM)
+		size = size < 0x40000 ? size : 0x40000;
 
 	if (size)
 	{
@@ -2362,6 +2378,11 @@ void CMemory::InitROM (void)
 		case 0x1420:
 		case 0x1520:
 		case 0x1A20:
+		// SuperFX FastROM for ROM hacks
+		case 0x1330:
+		case 0x1430:
+		case 0x1530:
+		case 0x1A30:
 			Settings.SuperFX = TRUE;
 			S9xInitSuperFX();
 			if (ROM[0x7FDA] == 0x33)
@@ -2794,9 +2815,6 @@ void CMemory::map_WRAM (void)
 void CMemory::map_LoROMSRAM (void)
 {
         uint32 hi;
-
-        if (SRAMSize == 0)
-            return;
 
         if (ROMSize > 11 || SRAMSize > 5)
             hi = 0x7fff;
@@ -3662,6 +3680,8 @@ void CMemory::ApplyROMFixes (void)
 		Timings.RenderPos = 128;
 	else if (match_na("AIR STRIKE PATROL") || match_na("DESERT FIGHTER"))
 		Timings.RenderPos = 128; // Just hides shadow
+	else if (match_na("FULL THROTTLE RACING"))
+		Timings.RenderPos = 128;
 	// From bsnes
 	else if (match_na("NHL '94") || match_na("NHL PROHOCKEY'94"))
 		Timings.RenderPos = 32;
