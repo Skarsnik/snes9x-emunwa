@@ -27,6 +27,7 @@
 #include "gfx.h"
 #include "memmap.h"
 #include "ppu.h"
+#include "snes9x-nwaccess.h"
 
 static void S9xThrottle(int);
 static void S9xCheckPointerTimer();
@@ -91,6 +92,11 @@ int main(int argc, char *argv[])
     S9xInitDisplay(argc, argv);
 
     S9xPortSoundInit();
+
+    if (gui_config->emulator_network_access_enabled)
+    {
+
+    }
 
     for (int port = 0; port < 2; port++)
     {

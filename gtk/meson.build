@@ -8,7 +8,7 @@ project('snes9x-gtk',
 args = ['-DSNES9X_GTK', '-DUNZIP_SUPPORT', '-DNETPLAY_SUPPORT', '-DJMA_SUPPORT', '-Wall', '-W', '-Wno-unused-parameter']
 srcs = []
 deps = []
-includes = ['../apu/bapu', '../', 'src']
+includes = ['../apu/bapu', '../', 'src', '../emu-nwaccess', '../emu-nwaccess/emulator-networkaccess/c_includes']
 warns = []
 libs = []
 
@@ -334,7 +334,9 @@ srcs += [
  'src/gtk_netplay.cpp',
  'src/gtk_netplay.h',
  'src/background_particles.cpp',
- 'src/background_particles.h'
+ 'src/background_particles.h',
+ '../emu-nwaccess/snes9x-nwaccess.cpp',
+ '../emu-nwaccess/snes9x-nwaccess.h'
 ]
 
 libjma_srcs = [

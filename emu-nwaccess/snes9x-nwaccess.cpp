@@ -19,7 +19,7 @@
 #include "win32_sound.h"
 #include "wsnes9x.h"
 
-#elif defined (linux) 
+#elif (defined(__unix__) || defined(__unix) || (defined(__APPLE__) && defined(__MACH__)))
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -128,10 +128,10 @@ bool S9xNWAccessInit()
     NetworkAccessData.messageMutex = false;
     //ReleaseMutex(NetworkAccessData.messageMutex);
 #endif
-    generic_poll_server_add_callback(SERVER_STARTED, &EmuNWAccessServerStarted);
-    generic_poll_server_add_callback(NEW_CLIENT, &EmuNWAccessNewClient);
-    generic_poll_server_add_callback(REMOVED_CLIENT, &EmuNWAccessRemoveClient);
-    generic_poll_server_add_callback(AFTER_POLL, &EmuNWAccessAfterPoll);
+    generic_poll_server_add_callback(SERVER_STARTED, (void*)(&EmuNWAccessServerStarted));
+    generic_poll_server_add_callback(NEW_CLIENT, (void*)(&EmuNWAccessNewClient));
+    generic_poll_server_add_callback(REMOVED_CLIENT, (void*)(&EmuNWAccessRemoveClient));
+    generic_poll_server_add_callback(AFTER_POLL, (void*)(&EmuNWAccessAfterPoll));
     //create_thread();
     NetworkAccessData.initalized = true;
 
@@ -153,16 +153,26 @@ void S9xNWAccessInitData()
     NetworkAccessData.message[0] = 0;
 }
 
+#ifdef SNES9X_GTK
+static gpointer GThreadServerStart(gpointer)
+{
+    S9xNWAServerLoop(NULL);
+}
+#endif
 
 bool	S9xNWAccessStart()
 {
     if (NetworkAccessData.initalized == false)
         S9xNWAccessInit();
     S9xNWAccessInitData();
+#ifdef __WIN32__
     uintptr_t thread;
     thread = _beginthread(S9xNWAServerLoop, 0, NULL);
+#elif defined(SNES9X_GTK)
+    GThread* thread = g_thread_new(NULL, GThreadServerStart, NULL);
+#endif
     NetworkAccessData.thread = thread;
-    return (thread != (uintptr_t)(~0));
+    return (thread != (THREAD_TYPE)(~0));
 }
 
 bool	S9xNWAccessStop()
@@ -170,7 +180,6 @@ bool	S9xNWAccessStop()
     NetworkAccessData.stopRequest = true;
     return true;
 }
-
 
 
 void	S9xNWAServerLoop(void *)
@@ -305,7 +314,9 @@ bool    S9xNWAGuiLoop()
             case NetworkAccessControlCommand::CMD_RESET:
             {
                 S9xSoftReset();
-                ReInitSound(); // This is Win32 only
+#ifdef __WIN32__
+                ReInitSound();
+#endif
                 break;
             }
             case NetworkAccessControlCommand::CMD_RELOAD:
