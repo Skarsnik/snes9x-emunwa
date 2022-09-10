@@ -27,6 +27,7 @@
 #include "memmap.h"
 #include "ppu.h"
 #include "fmt/format.h"
+#include "snes9x-nwaccess.h"
 
 #include <iomanip>
 
@@ -100,6 +101,10 @@ int main(int argc, char *argv[])
 
     S9xPortSoundInit();
 
+    if (gui_config->emulator_network_access_enabled)
+    {
+
+    }
     S9xReportControllers();
     for (int port = 0; port < 2; port++)
     {

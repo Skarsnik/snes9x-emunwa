@@ -3,8 +3,13 @@
 
 #ifdef _WIN32
     #include <winsock2.h>
+    typedef uintptr_t THREAD_TYPE;
 #endif
 
+#ifdef SNES9X_GTK
+    #include <glib.h>
+    typedef  GThread* THREAD_TYPE;
+#endif
 
 const int NWACCESS_START_PORT = 68500;
 const int NWACCESS_MAX_CLIENTS = 5;
@@ -55,7 +60,7 @@ struct NetworkAccessInfos {
     std::atomic_bool    stopRequest;
     std::atomic_bool    messageMutex;
     char            message[512];
-    uintptr_t       thread;
+    THREAD_TYPE      thread;
     char*           id;
 };
 

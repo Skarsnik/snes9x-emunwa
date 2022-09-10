@@ -131,6 +131,7 @@ int Snes9xConfig::load_defaults()
     ntsc_scanline_intensity = 1;
     scanline_filter_intensity = 0;
     Settings.BilinearFilter = false;
+    emulator_network_access_enabled = false;
     netplay_activated = false;
     netplay_server_up = false;
     netplay_is_server = false;
@@ -293,6 +294,9 @@ int Snes9xConfig::save_config_file()
         outbool("Fullscreen", 0);
     else
         outbool("Fullscreen", fullscreen);
+
+    section = "Emulator Network Access";
+    outbool("EmulatorNetworkAccessEnabled", emulator_network_access_enabled);
 
     section = "Netplay";
     outbool("ActAsServer", netplay_is_server);
@@ -516,6 +520,9 @@ int Snes9xConfig::load_config_file()
     inbool("UIVisible", ui_visible);
     inbool("Fullscreen", fullscreen);
     inbool("EnableIcons", enable_icons);
+
+    section = "Emulator Network Access";
+    inbool("EmulatorNetworkAccessEnabled", emulator_network_access_enabled);
 
     section = "Netplay";
     inbool("ActAsServer", netplay_is_server);

@@ -120,6 +120,9 @@ class Snes9xConfig
     bool netplay_activated;
     bool netplay_server_up;
 
+    /*NWA */
+    bool emulator_network_access_enabled;
+
     /* Operational */
     std::vector<std::string> sound_drivers;
     std::vector<std::string> display_drivers;
