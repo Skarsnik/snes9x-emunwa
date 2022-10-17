@@ -8,6 +8,7 @@
 
 #ifdef SNES9X_GTK
     #include <glib.h>
+    #include "gtk_s9xwindow.h"
     typedef  GThread* THREAD_TYPE;
 #endif
 
@@ -34,6 +35,7 @@ struct NetworkAccessClient {
     uint8*      MemoryToWrite;
     generic_poll_server_memory_argument* MemoryWriteInfos;
 };
+
 
 struct NetworkAccessInfos {
     bool            initalized = false;
@@ -62,12 +64,20 @@ struct NetworkAccessInfos {
     char            message[512];
     THREAD_TYPE      thread;
     char*           id;
+#ifdef SNES9X_GTK
+//#include <gtk_s9xwindow.h>
+    Snes9xWindow*    gtkWindow;
+#endif
 };
 
+#ifdef SNES9X_GTK
+void    S9xNWASetGtkWindow(Snes9xWindow* window);
+#endif
+
 bool    S9xNWAccessInit();
-bool	S9xNWAccessStart();
-bool	S9xNWAccessStop();
-void	S9XSetNWAError(const char*msg);
+bool    S9xNWAccessStart();
+bool    S9xNWAccessStop();
+void    S9XSetNWAError(const char*msg);
 bool    S9xNWAGuiLoop();
 void    S9xNWAServerLoop(void*);
 void    EmuNWAccessSetMessage(char* msg);

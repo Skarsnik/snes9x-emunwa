@@ -34,6 +34,7 @@ static void S9xCheckPointerTimer();
 static bool S9xIdleFunc();
 static bool S9xPauseFunc();
 static bool S9xScreenSaverCheckFunc();
+static bool S9xNWALoop();
 
 Snes9xWindow *top_level;
 Snes9xConfig *gui_config;
@@ -160,8 +161,26 @@ int main(int argc, char *argv[])
     if (rom_filename && *Settings.InitialSnapshotFilename)
         S9xUnfreezeGame(Settings.InitialSnapshotFilename);
 
+    if (true || gui_config->emulator_network_access_enabled)
+    {
+        S9xNWASetGtkWindow(top_level);
+        S9xNWAccessInit();
+        S9xNWAccessStart();
+        Glib::signal_timeout().connect(sigc::ptr_fun(S9xNWALoop), 20);
+    }
     app->run(*top_level->window.get());
     return 0;
+}
+
+/* This is a NWA function that must run in the gui/main thread
+ * It's reponsible for doing control command like pausing, stop,
+ * savestate...
+*/
+
+bool S9xNWALoop()
+{
+    S9xNWAGuiLoop();
+    return true;
 }
 
 int S9xOpenROM(const char *rom_filename)

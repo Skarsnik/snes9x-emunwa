@@ -6,9 +6,12 @@
 
 #define _WINSOCKAPI_
 
+// Don't include snes9x before snes9x-nwaccess, gtk_conpat.h fail if so'
+#include "snes9x-nwaccess.h"
+
 #include "snes9x.h"
 #include "memmap.h"
-#include "snes9x-nwaccess.h"
+
 #include "snapshot.h"
 #include "display.h"
 
@@ -107,10 +110,27 @@ struct NetworkAccessInfos NetworkAccessData;
 
 #include <list>
 
-static void create_thread()
-{
+/*
+ * This is a list of function for to wrap windows defined snes9x functions
+ *
+ */
 
+#ifdef SNES9X_GTK
+void    S9xSetPause(unsigned int)
+{
+    NetworkAccessData.gtkWindow->pause_from_user();
 }
+
+void S9xClearPause(unsigned int)
+{
+    NetworkAccessData.gtkWindow->unpause_from_user();
+}
+
+void    S9xNWASetGtkWindow(Snes9xWindow* window)
+{
+    NetworkAccessData.gtkWindow = window;
+}
+#endif
 
 // This should run once
 bool S9xNWAccessInit()
@@ -157,6 +177,7 @@ void S9xNWAccessInitData()
 static gpointer GThreadServerStart(gpointer)
 {
     S9xNWAServerLoop(NULL);
+    return NULL;
 }
 #endif
 
@@ -190,8 +211,9 @@ void	S9xNWAServerLoop(void *)
 
 bool EmuNWAccessServerStarted(int port)
 {
-    char *animals[] = {"Pony", "Goose", "Squirrel", "Chicken", "Horse", "Duck", "Cat", "Dog", "Sliver"};
-    char *emotions[] = {"Angry", "Smiling", "Happy", "Obsessed", "Hungry", "Special", "Drunk"};
+    fprintf(stdout, "NetworkAccess started on port %d\n", port);
+    const char *animals[] = {"Pony", "Goose", "Squirrel", "Chicken", "Horse", "Duck", "Cat", "Dog", "Sliver"};
+    const char *emotions[] = {"Angry", "Smiling", "Happy", "Obsessed", "Hungry", "Special", "Drunk"};
 
     if (Settings.NWAccessSeed == 0)
     {
@@ -577,6 +599,7 @@ static unsigned int getMemorySize(const char* mem)
         return Memory.ROMSize;
     if (strcmp(mem, "VRAM") == 0)
         return 0x10000;
+    return 0; // This is not reachable
 }
 
 
