@@ -894,6 +894,8 @@ static void S9xDeinterleaveGD24 (int size, uint8 *base)
 
 bool8 CMemory::Init (void)
 {
+	std::unique_lock<std::mutex> lk(Memory.lock);
+
 	// TODO: If these change size, check other locations in the code that also
 	// have the fixed size. In the future, make this a static allocation.
     RAM	 = (uint8 *) malloc(0x20000);
@@ -986,6 +988,7 @@ bool8 CMemory::Init (void)
 
 void CMemory::Deinit (void)
 {
+	std::unique_lock<std::mutex> lk(Memory.lock);
 	if (RAM)
 	{
 		free(RAM);

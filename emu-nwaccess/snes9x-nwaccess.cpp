@@ -619,6 +619,8 @@ int64_t EmuNWAccessCoreMemories(SOCKET socket, char ** args, int ac)
 
 int64_t EmuNWAccessCoreRead(SOCKET socket, char ** args, int ac)
 {
+    std::unique_lock<std::mutex> lk(Memory.lock);
+
     uint8* to_read = NULL;
     if (strcmp(args[0],"WRAM") == 0)
         to_read = Memory.RAM;
@@ -685,6 +687,8 @@ int64_t EmuNWAccessCoreRead(SOCKET socket, char ** args, int ac)
 
 bool EmuNWAccessWriteToMemory(SOCKET socket, char* data, uint32_t size)
 {
+    std::unique_lock<std::mutex> lk(Memory.lock);
+
     auto client = EmuNWAccessGetClient(socket);
     if (size == 0)
         return false;
