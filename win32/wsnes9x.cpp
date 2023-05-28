@@ -2339,6 +2339,8 @@ LRESULT CALLBACK WinProc(
 
 	case WM_DESTROY:
 		Memory.SaveSRAM(S9xGetFilename(".srm", SRAM_DIR));
+		if (Settings.NWAccess)
+			S9xNWAccessStop();
 		GUI.hWnd = NULL;
 		PostQuitMessage (0);
 		return (0);

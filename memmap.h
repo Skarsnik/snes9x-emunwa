@@ -12,6 +12,8 @@
 #define MEMMAP_SHIFT		(12)
 #define MEMMAP_MASK			(MEMMAP_BLOCK_SIZE - 1)
 
+#include <mutex>
+
 struct CMemory
 {
 	enum
@@ -53,6 +55,7 @@ struct CMemory
 	uint8	NSRTHeader[32];
 	int32	HeaderCount;
 
+	std::mutex lock;
 	uint8	*RAM;
 	uint8	*ROM;
 	uint8	*SRAM;

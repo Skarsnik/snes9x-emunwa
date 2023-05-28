@@ -896,6 +896,8 @@ bool8 CMemory::Init (void)
 {
 	// TODO: If these change size, check other locations in the code that also
 	// have the fixed size. In the future, make this a static allocation.
+	std::unique_lock<std::mutex> lk(Memory.lock);
+
     RAM	 = (uint8 *) malloc(0x20000);
     SRAM = (uint8 *) malloc(0x80000);
     VRAM = (uint8 *) malloc(0x10000);
@@ -986,6 +988,7 @@ bool8 CMemory::Init (void)
 
 void CMemory::Deinit (void)
 {
+	std::unique_lock<std::mutex> lk(Memory.lock);
 	if (RAM)
 	{
 		free(RAM);

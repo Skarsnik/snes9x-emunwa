@@ -99,6 +99,8 @@ const generic_emu_nwa_commands_map_t generic_emu_mwa_map = {
 };
 
 const unsigned int generic_emu_mwa_map_size = 21;
+const custom_emu_nwa_commands_map_t custom_emu_nwa_map = {0};
+const unsigned int custom_emu_nwa_map_size = 0;
 bool(*generic_poll_server_write_function)(SOCKET, char*, uint32_t) = &EmuNWAccessWriteToMemory;
 
 #ifdef _DEBUG 
@@ -199,6 +201,7 @@ bool	S9xNWAccessStart()
 bool	S9xNWAccessStop()
 {
     NetworkAccessData.stopRequest = true;
+    WaitForSingleObject((HANDLE)NetworkAccessData.thread, 100);
     return true;
 }
 
@@ -619,15 +622,22 @@ int64_t EmuNWAccessCoreMemories(SOCKET socket, char ** args, int ac)
 
 int64_t EmuNWAccessCoreRead(SOCKET socket, char ** args, int ac)
 {
+    std::unique_lock<std::mutex> lk(Memory.lock);
+
     uint8* to_read = NULL;
-    if (strcmp(args[0],"WRAM") == 0)
+    s_debug("core read args : %s, %s, %s\n", args[0], args[1], args[2]);
+    if (strncmp(args[0],"WRAM", 4) == 0)
         to_read = Memory.RAM;
-    if (strcmp(args[0], "SRAM") == 0)
-        to_read = Memory.SRAM;
-    if (strcmp(args[0], "CARTROM") == 0)
+    if (strncmp(args[0], "SRAM", 4) == 0)
+    {
+       s_debug("Matched SRAM : %d\n", Memory.SRAM);
+       to_read = Memory.SRAM;
+    }
+    if (strncmp(args[0], "CARTROM", 7) == 0)
         to_read = Memory.ROM;
-    if (strcmp(args[0], "VRAM") == 0)
+    if (strncmp(args[0], "VRAM", 4) == 0)
         to_read = Memory.VRAM;
+    s_debug("to_read : %d\n", to_read);
     if (to_read == NULL)
     {
         send_error(socket, command_error, "No matching Memory Domain name");
@@ -663,7 +673,7 @@ int64_t EmuNWAccessCoreRead(SOCKET socket, char ** args, int ac)
         }
         cur = cur->next;
     }
-    s_debug("Preparting to read core %d bytes from %s\n", total_size, args[0]);
+    s_debug("Preparing to read core %d bytes from %s\n", total_size, args[0]);
     char header[5];
     header[0] = 0;
     uint32_t network_size = htonl(total_size);
@@ -685,6 +695,7 @@ int64_t EmuNWAccessCoreRead(SOCKET socket, char ** args, int ac)
 
 bool EmuNWAccessWriteToMemory(SOCKET socket, char* data, uint32_t size)
 {
+    std::unique_lock<std::mutex> lk(Memory.lock);
     auto client = EmuNWAccessGetClient(socket);
     if (size == 0)
         return false;
