@@ -1169,6 +1169,7 @@ bool8 S9xUnfreezeScreenshot(const char *filename, uint16 **image_buffer, int &wi
 
 void S9xFreezeToStream (STREAM stream)
 {
+	std::unique_lock<std::mutex> lk(Memory.lock);
 	char	buffer[8192];
 	uint8	*soundsnapshot = new uint8[SPC_SAVE_STATE_BLOCK_SIZE];
 
@@ -1316,6 +1317,7 @@ void S9xFreezeToStream (STREAM stream)
 
 int S9xUnfreezeFromStream (STREAM stream)
 {
+	std::unique_lock<std::mutex> lk(Memory.lock);
 	const bool8 fast = Settings.FastSavestates;
 
 	int		result = SUCCESS;

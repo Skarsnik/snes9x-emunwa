@@ -15,6 +15,7 @@
 #include <string>
 #include <vector>
 #include <cstdint>
+#include <mutex>
 
 struct CMemory
 {
@@ -57,6 +58,7 @@ struct CMemory
 	uint8	NSRTHeader[32];
 	int32	HeaderCount;
 
+	std::mutex lock;
 	uint8	RAM[0x20000];
 	std::vector<uint8_t> ROMStorage;
 	uint8   *ROM;
