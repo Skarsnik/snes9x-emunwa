@@ -32,7 +32,7 @@ struct NetworkAccessClient {
     char        id[512];
     bool        connected;
     
-    uint8*      MemoryToWrite;
+    uint8_t*      MemoryToWrite;
     generic_poll_server_memory_argument* MemoryWriteInfos;
 };
 
