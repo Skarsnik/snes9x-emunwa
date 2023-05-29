@@ -4,9 +4,6 @@
 [submodule "win32/zlib/src"]
 	path = win32/zlib/src
 	url = https://github.com/madler/zlib.git
-[submodule "win32/DirectXMath"]
-	path = win32/DirectXMath
-	url = https://github.com/Microsoft/DirectXMath
 [submodule "shaders/SPIRV-Cross"]
 	path = external/SPIRV-Cross
 	url = https://github.com/KhronosGroup/SPIRV-Cross.git
@@ -16,6 +13,6 @@
 [submodule "emu-nwaccess/emulator-networkaccess"]
 	path = emu-nwaccess/emulator-networkaccess
 	url = https://github.com/usb2snes/emulator-networkaccess.git
-[submodule "vulkan/vulkan"]
+[submodule "external/vulkan-headers"]
 	path = external/vulkan-headers
 	url = https://github.com/KhronosGroup/Vulkan-Headers.git

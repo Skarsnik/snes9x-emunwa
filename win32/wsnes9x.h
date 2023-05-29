@@ -110,7 +110,8 @@ enum RenderFilter{
 enum OutputMethod {
 	DIRECTDRAW = 0,
 	DIRECT3D,
-	OPENGL
+	OPENGL,
+	VULKAN
 };
 
 struct dMode
@@ -119,6 +120,17 @@ struct dMode
 	long width;
 	long depth;
 	long rate;
+};
+
+struct ShaderParam
+{
+    std::string name;
+    std::string id;
+    float min;
+    float max;
+    float val;
+    float step;
+    int significant_digits;
 };
 
 struct sCustomRomDlgSettings {
@@ -135,10 +147,8 @@ struct sGUI {
     HMENU hMenu;
     HINSTANCE hInstance;
 
-    DWORD hFrameTimer;
     DWORD hHotkeyTimer;
     HANDLE ClientSemaphore;
-    HANDLE FrameTimerSemaphore;
     HANDLE ServerTimerSemaphore;
 
     BYTE Language;
@@ -151,8 +161,8 @@ struct sGUI {
 	bool AVIHiRes;
     bool DoubleBuffered;
     bool FullScreen;
+	bool FullscreenOnOpen;
     bool Stretch;
-    bool HeightExtend;
     bool AspectRatio;
 	bool IntegerScaling;
 	OutputMethod outputMethod;
@@ -169,7 +179,7 @@ struct sGUI {
 	TCHAR OGLshaderFileName[MAX_PATH];
 
 	bool OGLdisablePBOs;
-	bool filterMessagFont;
+	int OSDSize;
 
     bool IgnoreNextMouseMove;
     RECT window_size;
@@ -260,6 +270,8 @@ struct sGUI {
     // rewinding
     unsigned int rewindBufferSize;
     unsigned int rewindGranularity;
+
+	bool AddToRegistry;
 };
 
 //TURBO masks
@@ -282,7 +294,6 @@ struct sLanguages {
     TCHAR *errModeDD;
     TCHAR *errInitDS;
     TCHAR *ApplyNeedRestart;
-    TCHAR *errFrameTimer;
 };
 
 #define CUSTKEY_ALT_MASK   0x01
@@ -324,6 +335,7 @@ struct SCustomKeys {
 	SCustomKey BGL3;
 	SCustomKey BGL4;
 	SCustomKey BGL5;
+	SCustomKey ToggleBackdrop;
 	SCustomKey ClippingWindows;
 	SCustomKey Transparency;
 	SCustomKey JoypadSwap;
@@ -462,6 +474,7 @@ void FreezeUnfreezeDialog(bool8 freeze);
 void FreezeUnfreezeDialogPreview(bool8 freeze);
 void FreezeUnfreeze(const char *filename, bool8 freeze);
 bool UnfreezeScreenshotSlot(int slot, uint16 **image_buffer, int &width, int &height);
+void S9xWinRemoveRegistryKeys();
 
 // This is used by NWAccess code to perform a loadrom correctly
 bool    wsnes9xLoadROM(const TCHAR *filename, const TCHAR *filename2 /*= NULL*/);

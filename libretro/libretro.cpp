@@ -16,6 +16,7 @@
 #include "crosshairs.h"
 #include <stdio.h>
 #include <vector>
+#include <string>
 
 #ifdef _WIN32
 #include <direct.h>
@@ -748,8 +749,8 @@ static void update_variables(void)
     }
 }
 
-static void S9xEndScreenRefreshCallback(void*)
-{
+void S9xSyncSpeed() {
+
     if (Settings.Mute) {
         S9xClearSamples();
         return;
@@ -936,10 +937,10 @@ void retro_cheat_set(unsigned index, bool enabled, const char *codeline)
         }
 
         /* Goldfinger was broken and nobody noticed. Removed */
-        if (S9xAddCheatGroup ("retro", code) >= 0)
+        if (S9xAddCheatGroup (std::string("retro"), std::string(code)) >= 0)
         {
             if (enabled)
-                S9xEnableCheatGroup (Cheat.g.size () - 1);
+                S9xEnableCheatGroup (Cheat.group.size () - 1);
         }
         else
         {
@@ -1059,14 +1060,14 @@ static bool8 LoadBIOS(uint8 *biosrom, const char *biosname, int biossize)
     char	name[PATH_MAX + 1];
     bool8 r = FALSE;
 
-    strcpy(name, S9xGetDirectory(ROMFILENAME_DIR));
+    strcpy(name, S9xGetDirectory(ROMFILENAME_DIR).c_str());
     strcat(name, SLASH_STR);
     strcat(name, biosname);
 
     fp = fopen(name, "rb");
     if (!fp)
     {
-        strcpy(name, S9xGetDirectory(BIOS_DIR));
+        strcpy(name, S9xGetDirectory(BIOS_DIR).c_str());
         strcat(name, SLASH_STR);
         strcat(name, biosname);
 
@@ -1125,7 +1126,7 @@ bool retro_load_game(const struct retro_game_info *game)
         }
 
         else
-            rom_loaded = Memory.LoadROMMem((const uint8_t*)game->data ,game->size);
+            rom_loaded = Memory.LoadROMMem((const uint8_t*)game->data ,game->size, g_basename);
 
         if(biosrom) delete[] biosrom;
     }
@@ -1147,7 +1148,7 @@ bool retro_load_game(const struct retro_game_info *game)
         if (randomize_memory)
         {
             srand(time(NULL));
-            for(int lcv = 0; lcv < 0x20000; lcv++)
+            for(int lcv = 0; lcv < sizeof(Memory.RAM); lcv++)
                 Memory.RAM[lcv] = rand() % 256;
         }
     }
@@ -1370,7 +1371,6 @@ void retro_init(void)
     ntsc_screen_buffer = (uint16*) calloc(1, MAX_SNES_WIDTH_NTSC * 2 * (MAX_SNES_HEIGHT + 16));
     snes_ntsc_buffer = ntsc_screen_buffer + (MAX_SNES_WIDTH_NTSC >> 1) * 16;
     S9xGraphicsInit();
-    S9xSetEndScreenRefreshCallback(S9xEndScreenRefreshCallback, NULL);
 
     S9xInitInputDevices();
     for (int i = 0; i < 2; i++)
@@ -2081,7 +2081,6 @@ bool8 S9xContinueUpdate(int width, int height)
 
 // Dummy functions that should probably be implemented correctly later.
 void S9xParsePortConfig(ConfigFile&, int) {}
-void S9xSyncSpeed() {}
 const char* S9xStringInput(const char* in) { return in; }
 
 #ifdef _WIN32
@@ -2090,41 +2089,23 @@ const char* S9xStringInput(const char* in) { return in; }
 #define SLASH '/'
 #endif
 
-const char* S9xGetFilename(const char* in, s9x_getdirtype type)
-{
-    static char newpath[2048];
-
-    newpath[0] = '\0';
-
-    switch (type)
-    {
-        case ROMFILENAME_DIR:
-            sprintf(newpath, "%s%c%s%s", g_rom_dir, SLASH, g_basename, in);
-            return newpath;
-        default:
-            break;
-    }
-
-    return in;
-}
-
-const char* S9xGetDirectory(s9x_getdirtype type)
+std::string S9xGetDirectory(s9x_getdirtype type)
 {
     switch (type)
     {
         case BIOS_DIR:
-            return retro_system_directory;
+            return std::string(retro_system_directory);
         default:
-            return g_rom_dir;
+            return std::string(g_rom_dir);
     }
 
-    return "";
+    return std::string("");
 }
 void S9xInitInputDevices() {}
 void S9xHandlePortCommand(s9xcommand_t, short, short) {}
 bool S9xPollButton(unsigned int, bool*) { return false; }
 void S9xToggleSoundChannel(int) {}
-const char* S9xGetFilenameInc(const char* in, s9x_getdirtype) { return ""; }
+std::string S9xGetFilenameInc(std::string in, s9x_getdirtype) { return ""; }
 const char* S9xBasename(const char* in) { return in; }
 bool8 S9xInitUpdate() { return TRUE; }
 void S9xExtraUsage() {}
