@@ -703,7 +703,7 @@ void S9xRestoreWindowTitle ()
     {
         char def[_MAX_FNAME];
         _splitpath(Memory.ROMFilename.c_str(), NULL, NULL, def, NULL);
-        _stprintf(buf, TEXT("%s - %s %s"), (wchar_t *)Utf8ToWide(def), WINDOW_TITLE, TEXT(VERSION));
+        _stprintf(buf, TEXT("%s - %s %s-nwa"), (wchar_t *)Utf8ToWide(def), WINDOW_TITLE, TEXT(VERSION));
     }
     else
         _stprintf(buf, TEXT("%s %s-nwa"), WINDOW_TITLE, TEXT(VERSION));
