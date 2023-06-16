@@ -12,12 +12,9 @@
 #define MEMMAP_SHIFT		(12)
 #define MEMMAP_MASK			(MEMMAP_BLOCK_SIZE - 1)
 
-<<<<<<< HEAD
 #include <mutex>
-=======
 #include <string>
 #include <vector>
->>>>>>> upstream/master
 
 struct CMemory
 {
