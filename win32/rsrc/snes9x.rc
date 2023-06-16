@@ -15,7 +15,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Anglais (Etats-Unis) resources
+// Anglais (États-Unis) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -1058,16 +1058,16 @@ BEGIN
         MENUITEM "&Full Screen\tAlt+Enter",     ID_WINDOW_FULLSCREEN
         POPUP "&Window Size"
         BEGIN
-            MENUITEM "&1x",                         ID_WINDOW_SIZE_1X,MFT_STRING,MFS_ENABLED
-            MENUITEM "&2x",                         ID_WINDOW_SIZE_2X,MFT_STRING,MFS_ENABLED
-            MENUITEM "&3x",                         ID_WINDOW_SIZE_3X,MFT_STRING,MFS_ENABLED
-            MENUITEM "&4x",                         ID_WINDOW_SIZE_4X,MFT_STRING,MFS_ENABLED
-            MENUITEM "&5x",                         ID_WINDOW_SIZE_5X,MFT_STRING,MFS_ENABLED
-            MENUITEM "&6x",                         ID_WINDOW_SIZE_6X,MFT_STRING,MFS_ENABLED
-            MENUITEM "&7x",                         ID_WINDOW_SIZE_7X,MFT_STRING,MFS_ENABLED
-            MENUITEM "&8x",                         ID_WINDOW_SIZE_8X,MFT_STRING,MFS_ENABLED
-            MENUITEM "&9x",                         ID_WINDOW_SIZE_9X,MFT_STRING,MFS_ENABLED
-            MENUITEM "1&0x",                        ID_WINDOW_SIZE_10X,MFT_STRING,MFS_ENABLED
+            MENUITEM "&1x",                         ID_WINDOW_SIZE_1X
+            MENUITEM "&2x",                         ID_WINDOW_SIZE_2X
+            MENUITEM "&3x",                         ID_WINDOW_SIZE_3X
+            MENUITEM "&4x",                         ID_WINDOW_SIZE_4X
+            MENUITEM "&5x",                         ID_WINDOW_SIZE_5X
+            MENUITEM "&6x",                         ID_WINDOW_SIZE_6X
+            MENUITEM "&7x",                         ID_WINDOW_SIZE_7X
+            MENUITEM "&8x",                         ID_WINDOW_SIZE_8X
+            MENUITEM "&9x",                         ID_WINDOW_SIZE_9X
+            MENUITEM "1&0x",                        ID_WINDOW_SIZE_10X
         END
         MENUITEM SEPARATOR
         MENUITEM "&Stretch Image\tAlt+Backspace", ID_WINDOW_STRETCH
@@ -1235,7 +1235,7 @@ BEGIN
     0
 END
 
-#endif    // Anglais (Etats-Unis) resources
+#endif    // Anglais (États-Unis) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

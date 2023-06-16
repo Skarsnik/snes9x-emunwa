@@ -12,6 +12,7 @@
 #define MEMMAP_SHIFT		(12)
 #define MEMMAP_MASK			(MEMMAP_BLOCK_SIZE - 1)
 
+
 #include <string>
 #include <vector>
 #include <cstdint>
