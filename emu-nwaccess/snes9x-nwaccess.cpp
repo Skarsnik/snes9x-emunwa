@@ -456,6 +456,7 @@ int64_t EmuNWAccessSetClientName(SOCKET socket, char **args, int ac)
 int64_t EmuNWAccessEmuInfo(SOCKET socket, char ** args, int ac)
 {
     char list_command[2048];
+    char version[50];
     memset(list_command, 0, 2048);
     for (unsigned int i = 0; i < generic_emu_mwa_map_size; i++)
     {
@@ -469,8 +470,9 @@ int64_t EmuNWAccessEmuInfo(SOCKET socket, char ** args, int ac)
             }
         }
     }
+    snprintf(version, 50, "%s-nwa", VERSION);
     SendFullHashReply(socket, 5, "name", "Snes9x",
-                                 "version", "1.60-nwa",
+                                 "version", version,
                                  "nwa_version", "1.0",
                                  "id", NetworkAccessData.id,
                                  "commands", list_command);
