@@ -80,8 +80,10 @@ list(APPEND SOURCES src/gtk_display_driver_opengl.cpp
                     ../external/glad/src/gl.c
                     src/gtk_shader_parameters.cpp
                     ../vulkan/std_chrono_throttle.cpp
-                    ../vulkan/std_chrono_throttle.hpp)
+                    ../vulkan/std_chrono_throttle.hpp
+                    ../emu-nwaccess/snes9x-nwaccess.cpp)
 list(APPEND INCLUDES ../external/glad/include)
+list(APPEND INCLUDES ../emu-nwaccess/)
 
 if(USE_SLANG)
     list(APPEND SOURCES ../shaders/slang.cpp)
@@ -406,6 +408,9 @@ if(USE_SLANG)
     target_compile_definitions(slang_test PRIVATE ${DEFINES})
     target_link_libraries(slang_test PRIVATE ${LIBS})
 endif()
+
+target_include_directories(snes9x-gtk PUBLIC "../emu-nwaccess/emulator-networkaccess/generic poll server/")
+target_include_directories(snes9x-gtk PUBLIC "../emu-nwaccess/emulator-networkaccess/c_includes/")
 
 install(TARGETS snes9x-gtk)
 install(FILES ../data/cheats.bml DESTINATION ${DATADIR})
