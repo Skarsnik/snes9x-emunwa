@@ -78,7 +78,12 @@ list(APPEND SOURCES src/gtk_display_driver_opengl.cpp
                     ../vulkan/slang_helpers.hpp
                     ../vulkan/slang_preset_ini.cpp
                     ../vulkan/slang_preset_ini.hpp
-                    src/gtk_shader_parameters.cpp)
+                    src/gtk_shader_parameters.cpp
+                    ../emu-nwaccess/snes9x-nwaccess.cpp
+                    ../emu-nwaccess/snes9x-nwaccess.h
+                )
+list(APPEND INCLUDES ../emu-nwaccess/emulator-networkaccess/c_includes)
+list(APPEND INCLUDES ../emu-nwaccess/emulator-networkaccess/generic\ poll\ server)
 
 if(USE_SLANG)
     list(APPEND SOURCES ../shaders/slang.cpp)
@@ -403,6 +408,10 @@ if(USE_SLANG)
     target_compile_definitions(slang_test PRIVATE ${DEFINES})
     target_link_libraries(slang_test PRIVATE ${LIBS})
 endif()
+
+target_include_directories(snes9x-gtk PUBLIC "../emu-nwaccess/")
+target_include_directories(snes9x-gtk PUBLIC "../emu-nwaccess/emulator-networkaccess/generic poll server/")
+target_include_directories(snes9x-gtk PUBLIC "../emu-nwaccess/emulator-networkaccess/c_includes/")
 
 install(TARGETS snes9x-gtk)
 install(FILES ../data/cheats.bml DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${CMAKE_INSTALL_DATADIR})

@@ -201,7 +201,9 @@ bool	S9xNWAccessStart()
 bool	S9xNWAccessStop()
 {
     NetworkAccessData.stopRequest = true;
+    #ifdef __WIN32__
     WaitForSingleObject((HANDLE)NetworkAccessData.thread, 100);
+    #endif
     return true;
 }
 
