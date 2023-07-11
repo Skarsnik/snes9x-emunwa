@@ -80,6 +80,7 @@ list(APPEND SOURCES src/gtk_display_driver_opengl.cpp
                     ../vulkan/slang_preset_ini.hpp
                     src/gtk_shader_parameters.cpp
                     ../emu-nwaccess/snes9x-nwaccess.cpp
+                    ../emu-nwaccess/snes9x-nwaccess.h
                 )
 list(APPEND INCLUDES ../emu-nwaccess/emulator-networkaccess/c_includes)
 list(APPEND INCLUDES ../emu-nwaccess/emulator-networkaccess/generic\ poll\ server)
@@ -408,6 +409,7 @@ if(USE_SLANG)
     target_link_libraries(slang_test PRIVATE ${LIBS})
 endif()
 
+target_include_directories(snes9x-gtk PUBLIC "../emu-nwaccess/")
 target_include_directories(snes9x-gtk PUBLIC "../emu-nwaccess/emulator-networkaccess/generic poll server/")
 target_include_directories(snes9x-gtk PUBLIC "../emu-nwaccess/emulator-networkaccess/c_includes/")
 
