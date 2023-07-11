@@ -409,6 +409,7 @@ if(USE_SLANG)
     target_link_libraries(slang_test PRIVATE ${LIBS})
 endif()
 
+target_include_directories(snes9x-gtk PUBLIC "../emu-nwaccess/")
 target_include_directories(snes9x-gtk PUBLIC "../emu-nwaccess/emulator-networkaccess/generic poll server/")
 target_include_directories(snes9x-gtk PUBLIC "../emu-nwaccess/emulator-networkaccess/c_includes/")
 
