@@ -4,6 +4,20 @@
 #ifdef _WIN32
     #include <winsock2.h>
     typedef uintptr_t THREAD_TYPE;
+#elif (defined(__unix__) || defined(__unix) || (defined(__APPLE__) && defined(__MACH__)))
+    #include <sys/types.h>
+    #include <sys/socket.h>
+    #include <netinet/in.h>
+    #include <arpa/inet.h>
+    #include <unistd.h> /* close */
+    #include <netdb.h> /* gethostbyname */
+    #define INVALID_SOCKET -1
+    #define SOCKET_ERROR -1
+    #define closesocket(s) close(s)
+    typedef int SOCKET;
+    typedef struct sockaddr_in SOCKADDR_IN;
+    typedef struct sockaddr SOCKADDR;
+    typedef struct in_addr IN_ADDR;
 #endif
 
 #ifdef SNES9X_GTK
