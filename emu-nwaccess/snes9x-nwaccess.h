@@ -21,10 +21,11 @@ enum class NetworkAccessControlCommand {
     CMD_STOP,
     CMD_RESUME,
     CMD_RELOAD,
-    CMD_LOAD
+    CMD_LOAD,
+    CMD_MESSAGE
 };
 
-#include "emulator-networkaccess/generic poll server/generic_poll_server.h"
+#include "emu-nwaccess/generic_poll_server.h"
 
 struct NetworkAccessClient {
     SOCKET      socket;
@@ -114,3 +115,5 @@ int64_t    EmuNWAccessCoreWrite(SOCKET socket, char **args, int ac);
 int64_t    EmuNWAccessNop(SOCKET socket, char **args, int ac);
 int64_t    EmuNWAccessLoadState(SOCKET socket, char **args, int ac);
 int64_t    EmuNWAccessSaveState(SOCKET socket, char **args, int ac);
+int64_t    EmuNWAccessMessage(SOCKET socket, char** args, int ac);
+

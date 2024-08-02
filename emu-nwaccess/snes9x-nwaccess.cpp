@@ -50,8 +50,8 @@ typedef struct in_addr IN_ADDR;
 #include <semaphore.h>
 #endif
 
-#include "emu-nwaccess/emulator-networkaccess/c_includes/emulator_network_access_defines.h"
-#include "emu-nwaccess/emulator-networkaccess/generic poll server/generic_poll_server.h"
+#include "emu-nwaccess/emulator_network_access_defines.h"
+#include "emu-nwaccess/generic_poll_server.h"
 
 
 #define StartHashReply(S) generic_poll_server_start_hash_reply(S)
@@ -95,18 +95,19 @@ const generic_emu_nwa_commands_map_t generic_emu_mwa_map = {
     {DEBUG_BREAK, EmuNWAccessNop},
     {DEBUG_CONTINUE, EmuNWAccessNop},
     {LOAD_STATE, EmuNWAccessLoadState},
-    {SAVE_STATE, EmuNWAccessSaveState}
+    {SAVE_STATE, EmuNWAccessSaveState},
+    {MESSAGE, EmuNWAccessMessage},
 };
 
-const unsigned int generic_emu_mwa_map_size = 21;
+const unsigned int generic_emu_mwa_map_size = 22;
 const custom_emu_nwa_commands_map_t custom_emu_nwa_map = {0};
 const unsigned int custom_emu_nwa_map_size = 0;
 bool(*generic_poll_server_write_function)(SOCKET, char*, uint32_t) = &EmuNWAccessWriteToMemory;
 
-#ifdef _DEBUG 
+/*#ifdef _DEBUG 
 #define SKARSNIK_DEBUG 1
-#endif
-#include "emu-nwaccess/emulator-networkaccess/generic poll server/generic_poll_server.c"
+#endif*/
+#include "emu-nwaccess/generic_poll_server.c"
 
 struct NetworkAccessInfos NetworkAccessData;
 
@@ -516,6 +517,14 @@ static int64_t    DoControlCommand(SOCKET socket, NetworkAccessControlCommand cm
     NetworkAccessData.controlClient = socket;
     return 0;
 }
+
+int64_t    EmuNWAccessMessage(SOCKET socket, char** args, int ac)
+{
+    EmuNWAccessSetMessage(args[0]);
+    write(socket, "\n\n", 2);
+    return 0;
+}
+
 
 int64_t EmuNWAccessEmuPause(SOCKET socket, char ** args, int ac)
 {
