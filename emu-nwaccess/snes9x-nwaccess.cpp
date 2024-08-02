@@ -479,6 +479,7 @@ int64_t EmuNWAccessEmuInfo(SOCKET socket, char ** args, int ac)
                                  "nwa_version", "1.0",
                                  "id", NetworkAccessData.id,
                                  "commands", list_command);
+    s_debug("Sending Emulator Info\n");
     return 0;
 }
 
@@ -561,23 +562,30 @@ int64_t EmuNWAccessLoadGame(SOCKET socket, char ** args, int ac)
 
 int64_t EmuNWAccessGameInfo(SOCKET socket, char ** args, int ac)
 {
-    SendFullHashReply(socket, 5, "name", Memory.ROMName,
-                             "file", Memory.ROMFilename,
-                             "region", Memory.Country(),
-                             "type", Memory.MapType(),
-                             "video-ouput", (Memory.ROMRegion > 12 || Memory.ROMRegion < 2) ? "NTSC 60Hz" : "PAL 50Hz");
+    if (SendFullHashReply(socket, 5, "name", Memory.ROMName,
+        "file", Memory.ROMFilename.c_str(),
+        "region", Memory.Country(),
+        "type", Memory.MapType(),
+        "video-ouput", (Memory.ROMRegion > 12 || Memory.ROMRegion < 2) ? "NTSC 60Hz" : "PAL 50Hz")
+        == false)
+        generic_poll_server_set_client_state_error(socket);
     return 0;
 }
 
 int64_t EmuNWAccessCoreList(SOCKET socket, char ** args, int ac)
 {
+    bool write_success;
     if (ac == 0 || (ac == 1 && strcmp(args[0], "SNES") == 0))
     {
-        SendFullHashReply(socket, 2, "name", "snes9x",
+        write_success = SendFullHashReply(socket, 2, "name", "snes9x",
             "platform", "SNES");
     }
     else {
-        write(socket, "\n\n", 2);
+        write_success = write(socket, "\n\n", 2);
+    }
+    if (write_success == false)
+    {
+        generic_poll_server_set_client_state_error(socket);
     }
     return 0;
 }
@@ -586,9 +594,12 @@ int64_t EmuNWAccessCoreInfo(SOCKET socket, char ** args, int ac)
 {
     if (ac == 0 || (ac == 1 && strcmp(args[0], "snes9x") == 0))
     {
-        SendFullHashReply(socket, 3, "name", "snes9x",
+        if (SendFullHashReply(socket, 3, "name", "snes9x",
             "version", VERSION,
-            "platform", "SNES");
+            "platform", "SNES") == false)
+        {
+            generic_poll_server_set_client_state_error(socket);
+        }
     } else {
         send_error(socket, invalid_argument, "The specified core does not exists, only snes9x core exists");
     }
@@ -626,10 +637,14 @@ int64_t EmuNWAccessCoreMemories(SOCKET socket, char ** args, int ac)
     sprintf(buf + 20, "%d", getMemorySize("SRAM"));
     sprintf(buf + 40, "%d", getMemorySize("CARTROM"));
     sprintf(buf + 60, "%d", getMemorySize("VRAM"));
-    SendFullHashReply(socket, 4 * 3, "name", "WRAM", "access", "rw", "size", (char*)buf,
-                                     "name", "SRAM", "access", "rw", "size", (char*)(buf + 20),
-                                     "name", "CARTROM", "access", "rw", "size", (char*)(buf + 40),
-                                     "name", "VRAM", "access", "rw", "size", (char*)(buf + 60));
+    if (SendFullHashReply(socket, 4 * 3, "name", "WRAM", "access", "rw", "size", (char*)buf,
+        "name", "SRAM", "access", "rw", "size", (char*)(buf + 20),
+        "name", "CARTROM", "access", "rw", "size", (char*)(buf + 40),
+        "name", "VRAM", "access", "rw", "size", (char*)(buf + 60))
+        == false)
+    {
+        generic_poll_server_set_client_state_error(socket);
+    }
     return 0;
 }
 
@@ -638,7 +653,12 @@ int64_t EmuNWAccessCoreRead(SOCKET socket, char ** args, int ac)
     std::unique_lock<std::mutex> lk(Memory.lock);
 
     uint8* to_read = NULL;
-    s_debug("core read args : %s, %s, %s\n", args[0], args[1], args[2]);
+    if (ac > 2)
+    {
+        s_debug("core read args : %s, %s, %s\n", args[0], args[1], args[2]);
+    } else {
+        s_debug("core read args : %s\n", args[0]);
+    }
     if (strncmp(args[0],"WRAM", 4) == 0)
         to_read = Memory.RAM;
     if (strncmp(args[0], "SRAM", 4) == 0)
@@ -666,7 +686,7 @@ int64_t EmuNWAccessCoreRead(SOCKET socket, char ** args, int ac)
         send_error(socket, invalid_argument, "You can't only ommit the size of a single write");
         return 0;
     }
-    generic_poll_server_memory_argument*    pargs = generic_poll_server_parse_memory_argument(args + 1, ac - 1);
+    generic_poll_server_memory_argument* pargs = generic_poll_server_parse_memory_argument(args + 1, ac - 1);
     generic_poll_server_memory_argument* cur = pargs;
     uint32_t total_size = 0;
     while (cur != NULL)
@@ -687,19 +707,19 @@ int64_t EmuNWAccessCoreRead(SOCKET socket, char ** args, int ac)
         cur = cur->next;
     }
     s_debug("Preparing to read core %d bytes from %s\n", total_size, args[0]);
-    char header[5];
-    header[0] = 0;
-    uint32_t network_size = htonl(total_size);
-    memcpy(header + 1, (void*)&network_size, 4);
-    //s_debug("Header : %s", hexString(header, 5));
-    write(socket, header, 5);
+    if (generic_poll_server_send_binary_header(socket, total_size) == false)
+        return 0;
     cur = pargs;
     while (cur != NULL)
     {
         unsigned int size = cur->size;
         if (size == 0)
             size = getMemorySize(args[0]) - cur->offset;
-        write(socket, (const char*)to_read + cur->offset, size);
+        if (write(socket, (const char*)to_read + cur->offset, size) == -1)
+        {
+            generic_poll_server_set_client_state_error(socket);
+            break;
+        }
         cur = cur->next;
     }
     generic_poll_server_free_memory_argument(pargs);
@@ -724,7 +744,10 @@ bool EmuNWAccessWriteToMemory(SOCKET socket, char* data, uint32_t size)
     client->MemoryWriteInfos = NULL;
     s_debug("Done Writing to memory\n");
     client->MemoryToWrite = NULL;
-    write(socket, "\n\n", 2);
+    if (write(socket, "\n\n", 2) == -1)
+    {
+        generic_poll_server_set_client_state_error(socket);
+    }
     return true;
 }
 
@@ -792,6 +815,11 @@ int64_t EmuNWAccessNop(SOCKET socket, char ** args, int ac)
 
 int64_t EmuNWAccessLoadState(SOCKET socket, char ** args, int ac)
 {
+    if (ac != 1)
+    {
+        send_error(socket, command_error, "LOAD_STATE: You need to provide a file to load");
+        return -1;
+    }
     NetworkAccessData.stateTriggerMutex = true;
     NetworkAccessData.saveStatePath = (char*)malloc(strlen(args[0]) + 1);
     NetworkAccessData.saveState = false;
@@ -802,6 +830,11 @@ int64_t EmuNWAccessLoadState(SOCKET socket, char ** args, int ac)
 
 int64_t EmuNWAccessSaveState(SOCKET socket, char ** args, int ac)
 {
+    if (ac != 1)
+    {
+        send_error(socket, command_error, "SAVE_STATE: You need to provide a file path where to write the state");
+        return -1;
+    }
     NetworkAccessData.stateTriggerMutex = true;
     NetworkAccessData.saveStatePath = (char*)malloc(strlen(args[0]) + 1);
     NetworkAccessData.saveState = true;
