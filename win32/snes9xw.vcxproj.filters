@@ -791,211 +791,188 @@
     <ClCompile Include="..\emu-nwaccess\snes9x-nwaccess.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="rsrc\nodrop.cur">
-      <Filter>Resource\Other</Filter>
-    </None>
-    <None Include="rsrc\rt_manif.bin">
-      <Filter>Resource\Other</Filter>
-    </None>
+    <ClInclude Include="..\apu\apu.h" />
+    <ClInclude Include="..\apu\bapu\dsp\blargg_common.h" />
+    <ClInclude Include="..\apu\bapu\dsp\blargg_config.h" />
+    <ClInclude Include="..\apu\bapu\dsp\blargg_endian.h" />
+    <ClInclude Include="..\apu\bapu\dsp\blargg_source.h" />
+    <ClInclude Include="..\apu\bapu\dsp\sdsp.hpp" />
+    <ClInclude Include="..\apu\bapu\dsp\SPC_DSP.h" />
+    <ClInclude Include="..\apu\bapu\snes\snes.hpp" />
+    <ClInclude Include="..\apu\resampler.h" />
+    <ClInclude Include="..\external\imgui\imconfig.h" />
+    <ClInclude Include="..\external\imgui\imgui.h" />
+    <ClInclude Include="..\external\imgui\imgui_impl_dx9.h" />
+    <ClInclude Include="..\external\imgui\imgui_impl_opengl3.h" />
+    <ClInclude Include="..\external\imgui\imgui_impl_opengl3_loader.h" />
+    <ClInclude Include="..\external\imgui\imgui_impl_vulkan.h" />
+    <ClInclude Include="..\external\imgui\imgui_internal.h" />
+    <ClInclude Include="..\external\imgui\imstb_rectpack.h" />
+    <ClInclude Include="..\external\imgui\imstb_textedit.h" />
+    <ClInclude Include="..\external\imgui\imstb_truetype.h" />
+    <ClInclude Include="..\external\imgui\snes9x_imgui.h" />
+    <ClInclude Include="..\filter\2xsai.h" />
+    <ClInclude Include="..\filter\blit.h" />
+    <ClInclude Include="..\filter\epx.h" />
+    <ClInclude Include="..\filter\snes_ntsc.h" />
+    <ClInclude Include="..\filter\snes_ntsc_config.h" />
+    <ClInclude Include="..\filter\snes_ntsc_impl.h" />
+    <ClInclude Include="..\filter\xbrz.h" />
+    <ClInclude Include="..\filter\xbrz_config.h" />
+    <ClInclude Include="..\filter\xbrz_tools.h" />
+    <ClInclude Include="..\fscompat.h" />
+    <ClInclude Include="..\jma\7z.h" />
+    <ClInclude Include="..\jma\aribitcd.h" />
+    <ClInclude Include="..\jma\ariconst.h" />
+    <ClInclude Include="..\jma\ariprice.h" />
+    <ClInclude Include="..\jma\btreecd.h" />
+    <ClInclude Include="..\jma\crc32.h" />
+    <ClInclude Include="..\jma\iiostrm.h" />
+    <ClInclude Include="..\jma\inbyte.h" />
+    <ClInclude Include="..\jma\jma.h" />
+    <ClInclude Include="..\jma\lencoder.h" />
+    <ClInclude Include="..\jma\litcoder.h" />
+    <ClInclude Include="..\jma\lzma.h" />
+    <ClInclude Include="..\jma\lzmadec.h" />
+    <ClInclude Include="..\jma\portable.h" />
+    <ClInclude Include="..\jma\rcdefs.h" />
+    <ClInclude Include="..\jma\rngcoder.h" />
+    <ClInclude Include="..\jma\s9x-jma.h" />
+    <ClInclude Include="..\jma\winout.h" />
+    <ClInclude Include="..\msu1.h" />
+    <ClInclude Include="..\shaders\glsl.h" />
+    <ClInclude Include="..\shaders\shader_helpers.h" />
+    <ClInclude Include="..\shaders\shader_platform.h" />
+    <ClInclude Include="..\external\SPIRV-Cross\spirv.hpp" />
+    <ClInclude Include="..\external\SPIRV-Cross\spirv_cfg.hpp" />
+    <ClInclude Include="..\external\SPIRV-Cross\spirv_common.hpp" />
+    <ClInclude Include="..\external\SPIRV-Cross\spirv_cross.hpp" />
+    <ClInclude Include="..\external\SPIRV-Cross\spirv_cross_parsed_ir.hpp" />
+    <ClInclude Include="..\external\SPIRV-Cross\spirv_glsl.hpp" />
+    <ClInclude Include="..\external\SPIRV-Cross\spirv_parser.hpp" />
+    <ClInclude Include="..\statemanager.h" />
+    <ClInclude Include="..\sha256.h" />
+    <ClInclude Include="..\bml.h" />
+    <ClInclude Include="..\unzip\crypt.h" />
+    <ClInclude Include="..\unzip\ioapi.h" />
+    <ClInclude Include="..\unzip\iowin32.h" />
+    <ClInclude Include="..\unzip\mztools.h" />
+    <ClInclude Include="..\unzip\unzip.h" />
+    <ClInclude Include="..\unzip\zip.h" />
+    <ClInclude Include="..\vulkan\slang_helpers.hpp" />
+    <ClInclude Include="..\vulkan\slang_preset.hpp" />
+    <ClInclude Include="..\vulkan\slang_preset_ini.hpp" />
+    <ClInclude Include="..\vulkan\slang_shader.hpp" />
+    <ClInclude Include="..\vulkan\vulkan_context.hpp" />
+    <ClInclude Include="..\vulkan\vulkan_pipeline_image.hpp" />
+    <ClInclude Include="..\vulkan\vulkan_shader_chain.hpp" />
+    <ClInclude Include="..\vulkan\vulkan_simple_output.hpp" />
+    <ClInclude Include="..\vulkan\vulkan_slang_pipeline.hpp" />
+    <ClInclude Include="..\vulkan\vulkan_swapchain.hpp" />
+    <ClInclude Include="..\vulkan\vulkan_texture.hpp" />
+    <ClInclude Include="AVIOutput.h" />
+    <ClInclude Include="CCGShader.h" />
+    <ClInclude Include="CD3DCG.h" />
+    <ClInclude Include="CDirectDraw.h" />
+    <ClInclude Include="cgFunctions.h" />
+    <ClInclude Include="CGLCG.h" />
+    <ClInclude Include="cgMini.h" />
+    <ClInclude Include="CSaveLoadWithPreviewDlg.h" />
+    <ClInclude Include="COpenGL.h" />
+    <ClInclude Include="CShaderParamDlg.h" />
+    <ClInclude Include="CVulkan.h" />
+    <ClInclude Include="CWaveOut.h" />
+    <ClInclude Include="CXAudio2.h" />
+    <ClInclude Include="dxerr.h" />
+    <ClInclude Include="gl_core_3_1.h" />
+    <ClInclude Include="image_functions.h" />
+    <ClInclude Include="InputCustom.h" />
+    <ClInclude Include="IS9xDisplayOutput.h" />
+    <ClInclude Include="IS9xSoundOutput.h" />
+    <ClInclude Include="render.h" />
+    <ClInclude Include="rsrc\resource.h" />
+    <ClInclude Include="win32_display.h" />
+    <ClInclude Include="win32_sound.h" />
+    <ClInclude Include="wlanguage.h" />
+    <ClInclude Include="wsnes9x.h" />
+    <ClInclude Include="_tfwopen.h" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="..\jma\license.txt">
-      <Filter>JMA</Filter>
-    </Text>
+    <CustomBuild Include="..\65c816.h" />
+    <CustomBuild Include="..\bsx.h" />
+    <CustomBuild Include="..\c4.h" />
+    <CustomBuild Include="..\cheats.h" />
+    <CustomBuild Include="..\conffile.h" />
+    <CustomBuild Include="..\controls.h" />
+    <CustomBuild Include="..\cpuaddr.h" />
+    <CustomBuild Include="..\cpuexec.h" />
+    <CustomBuild Include="..\cpumacro.h" />
+    <CustomBuild Include="..\cpuops.h" />
+    <CustomBuild Include="..\crosshairs.h" />
+    <CustomBuild Include="..\debug.h" />
+    <CustomBuild Include="..\display.h" />
+    <CustomBuild Include="..\dma.h" />
+    <CustomBuild Include="..\dsp.h" />
+    <CustomBuild Include="..\filter\hq2x.h" />
+    <CustomBuild Include="..\font.h" />
+    <CustomBuild Include="..\fxemu.h" />
+    <CustomBuild Include="..\fxinst.h" />
+    <CustomBuild Include="..\getset.h" />
+    <CustomBuild Include="..\gfx.h" />
+    <CustomBuild Include="..\language.h" />
+    <CustomBuild Include="..\memmap.h" />
+    <CustomBuild Include="..\messages.h" />
+    <CustomBuild Include="..\missing.h" />
+    <CustomBuild Include="..\movie.h" />
+    <CustomBuild Include="..\netplay.h" />
+    <CustomBuild Include="..\obc1.h" />
+    <CustomBuild Include="..\pixform.h" />
+    <CustomBuild Include="..\port.h" />
+    <CustomBuild Include="..\ppu.h" />
+    <CustomBuild Include="..\sa1.h" />
+    <CustomBuild Include="..\sar.h" />
+    <CustomBuild Include="..\screenshot.h" />
+    <CustomBuild Include="..\sdd1.h" />
+    <CustomBuild Include="..\sdd1emu.h" />
+    <CustomBuild Include="..\seta.h" />
+    <CustomBuild Include="..\snapshot.h" />
+    <CustomBuild Include="..\snes9x.h" />
+    <CustomBuild Include="..\spc7110.h" />
+    <CustomBuild Include="..\spc7110dec.h" />
+    <CustomBuild Include="..\spc7110emu.h" />
+    <CustomBuild Include="..\srtc.h" />
+    <CustomBuild Include="..\srtcemu.h" />
+    <CustomBuild Include="..\stream.h" />
+    <CustomBuild Include="..\tile.h" />
+    <CustomBuild Include="..\tileimpl.h" />
+    <CustomBuild Include="CDirect3D.h" />
+    <CustomBuild Include="snes9x.cfg" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="rsrc\snes9x.rc">
-      <Filter>Resource</Filter>
-    </ResourceCompile>
+    <ResourceCompile Include="rsrc\snes9x.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="rsrc\cdd.bmp">
-      <Filter>Resource\Other</Filter>
-    </Image>
-    <Image Include="rsrc\closedfold.bmp">
-      <Filter>Resource\Other</Filter>
-    </Image>
-    <Image Include="rsrc\hd.bmp">
-      <Filter>Resource\Other</Filter>
-    </Image>
-    <Image Include="rsrc\hiddir.bmp">
-      <Filter>Resource\Other</Filter>
-    </Image>
-    <Image Include="rsrc\icon1.ico">
-      <Filter>Resource\Other</Filter>
-    </Image>
-    <Image Include="rsrc\nd.bmp">
-      <Filter>Resource\Other</Filter>
-    </Image>
-    <Image Include="rsrc\openfold.bmp">
-      <Filter>Resource\Other</Filter>
-    </Image>
-    <Image Include="rsrc\pad.bmp">
-      <Filter>Resource\Other</Filter>
-    </Image>
-    <Image Include="rsrc\ram.bmp">
-      <Filter>Resource\Other</Filter>
-    </Image>
-    <Image Include="rsrc\rd.bmp">
-      <Filter>Resource\Other</Filter>
-    </Image>
-    <Image Include="rsrc\rodir.bmp">
-      <Filter>Resource\Other</Filter>
-    </Image>
-    <Image Include="rsrc\ud.bmp">
-      <Filter>Resource\Other</Filter>
-    </Image>
-    <Image Include="rsrc\icon2.ico">
-      <Filter>Resource\Other</Filter>
-    </Image>
+    <Image Include="rsrc\cdd.bmp" />
+    <Image Include="rsrc\closedfold.bmp" />
+    <Image Include="rsrc\hd.bmp" />
+    <Image Include="rsrc\hiddir.bmp" />
+    <Image Include="rsrc\icon1.ico" />
+    <Image Include="rsrc\icon2.ico" />
     <Image Include="rsrc\icon3.ico" />
     <Image Include="rsrc\icon4.ico" />
+    <Image Include="rsrc\nd.bmp" />
+    <Image Include="rsrc\openfold.bmp" />
+    <Image Include="rsrc\pad.bmp" />
+    <Image Include="rsrc\ram.bmp" />
+    <Image Include="rsrc\rd.bmp" />
+    <Image Include="rsrc\rodir.bmp" />
+    <Image Include="rsrc\ud.bmp" />
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="..\65c816.h">
-      <Filter>Emu</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\bsx.h">
-      <Filter>Emu</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\c4.h">
-      <Filter>Emu</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\cheats.h">
-      <Filter>Emu</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\conffile.h">
-      <Filter>Emu</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\controls.h">
-      <Filter>Emu</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\cpuaddr.h">
-      <Filter>Emu</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\cpuexec.h">
-      <Filter>Emu</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\cpumacro.h">
-      <Filter>Emu</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\cpuops.h">
-      <Filter>Emu</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\crosshairs.h">
-      <Filter>Emu</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\debug.h">
-      <Filter>Emu</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\display.h">
-      <Filter>Emu</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\dma.h">
-      <Filter>Emu</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\dsp.h">
-      <Filter>Emu</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\font.h">
-      <Filter>Emu</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\fxemu.h">
-      <Filter>Emu</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\fxinst.h">
-      <Filter>Emu</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\getset.h">
-      <Filter>Emu</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\gfx.h">
-      <Filter>Emu</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\language.h">
-      <Filter>Emu</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\memmap.h">
-      <Filter>Emu</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\messages.h">
-      <Filter>Emu</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\missing.h">
-      <Filter>Emu</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\movie.h">
-      <Filter>Emu</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\netplay.h">
-      <Filter>Emu</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\obc1.h">
-      <Filter>Emu</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\pixform.h">
-      <Filter>Emu</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\port.h">
-      <Filter>Emu</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\ppu.h">
-      <Filter>Emu</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\sa1.h">
-      <Filter>Emu</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\sar.h">
-      <Filter>Emu</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\screenshot.h">
-      <Filter>Emu</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\sdd1.h">
-      <Filter>Emu</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\sdd1emu.h">
-      <Filter>Emu</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\seta.h">
-      <Filter>Emu</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\snapshot.h">
-      <Filter>Emu</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\snes9x.h">
-      <Filter>Emu</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\spc7110.h">
-      <Filter>Emu</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\spc7110dec.h">
-      <Filter>Emu</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\spc7110emu.h">
-      <Filter>Emu</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\srtc.h">
-      <Filter>Emu</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\srtcemu.h">
-      <Filter>Emu</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\stream.h">
-      <Filter>Emu</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\tile.h">
-      <Filter>Emu</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\tileimpl.h">
-      <Filter>Emu</Filter>
-    </CustomBuild>
-    <CustomBuild Include="CDirect3D.h">
-      <Filter>GUI\VideoDriver</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\filter\hq2x.h">
-      <Filter>Filter</Filter>
-    </CustomBuild>
-    <CustomBuild Include="snes9x.cfg" />
+    <None Include="rsrc\nodrop.cur" />
+    <None Include="rsrc\rt_manif.bin" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\jma\license.txt" />
   </ItemGroup>
 </Project>
