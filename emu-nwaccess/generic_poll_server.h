@@ -15,6 +15,12 @@ The function doing the command must returns this :
                            this is needed so the code can properly swallow
                            the next binary block
 */
+#ifdef _WIN32
+#include <winsock2.h>
+#else
+typedef int SOCKET;
+#endif
+
 
 typedef struct
 {
@@ -40,12 +46,6 @@ typedef generic_emu_nwa_command_entry generic_emu_nwa_commands_map_t[];
 
 typedef custom_emu_nwa_command_entry custom_emu_nwa_commands_map_t[];
 
-
-#ifdef _WIN32
-#include <winsock2.h>
-#else
-typedef int SOCKET;
-#endif
 
 typedef enum
 {

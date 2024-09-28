@@ -81,7 +81,7 @@ static void print_socket_error(const char* msg)
 
 static bool __send_hash_reply(SOCKET socket, bool end, unsigned int key_count, va_list list)
 {
-    bool toret = true;
+    // bool toret = true;
     for (unsigned int i = 0; i < key_count; i++)
     {
         char* key = va_arg(list, char*);
@@ -405,7 +405,7 @@ static void process_binary_block(generic_poll_server_client* client)
 {
     if (client->current_command == bCORE_WRITE)
     {
-        bool result = generic_poll_server_write_function(client->socket_fd, client->binary_block, client->binary_block_size);
+        // bool result = generic_poll_server_write_function(client->socket_fd, client->binary_block, client->binary_block_size);
         free(client->binary_block);
         client->binary_block = NULL;
         client->binary_block_size = 0;
@@ -794,7 +794,7 @@ static bool generic_poll_server_start(int poll_timeout)
             {
                 unsigned long piko = 1;
                 ioctlsocket(new_socket, FIONBIO, &piko);
-                int addrlen = sizeof(new_client);
+                unsigned int addrlen = sizeof(new_client);
                 getpeername(new_socket, (struct sockaddr *)&new_client, &addrlen);
                 char str[INET6_ADDRSTRLEN];
                 if (inet_ntop(AF_INET6, &new_client.sin6_addr, str, sizeof(str))) {
