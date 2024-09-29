@@ -8,10 +8,6 @@
 
 // Don't include snes9x before snes9x-nwaccess, gtk_conpat.h fail if so'
 #include "snes9x-nwaccess.h"
-#include "emu-nwaccess/emulator-networkaccess/generic poll server/generic_poll_server.h"
-#include "emu-nwaccess/emulator-networkaccess/c_includes/emulator_network_access_defines.h"
-// #include "emu-nwaccess/emulator_network_access_defines.h"
-// #include "emu-nwaccess/generic_poll_server.h"
 
 #include "snes9x.h"
 #include "memmap.h"
@@ -54,7 +50,8 @@ typedef struct in_addr IN_ADDR;
 #include <semaphore.h>
 #endif
 
-
+#include "emu-nwaccess/emulator_network_access_defines.h"
+#include "emu-nwaccess/generic_poll_server.h"
 
 
 #define StartHashReply(S) generic_poll_server_start_hash_reply(S)
@@ -110,7 +107,7 @@ bool(*generic_poll_server_write_function)(SOCKET, char*, uint32_t) = &EmuNWAcces
 /*#ifdef _DEBUG 
 #define SKARSNIK_DEBUG 1
 #endif*/
-// #include "emu-nwaccess/emulator-networkaccess/generic poll server/generic_poll_server.c"
+#include "emu-nwaccess/generic_poll_server.c"
 
 struct NetworkAccessInfos NetworkAccessData;
 
@@ -217,6 +214,7 @@ void	S9xNWAServerLoop(void *)
     fprintf(stdout, "Starting generic server\n");
     generic_poll_server_start(50);
 }
+
 bool EmuNWAccessServerStarted(int port)
 {
     fprintf(stdout, "NetworkAccess started on port %d\n", port);
