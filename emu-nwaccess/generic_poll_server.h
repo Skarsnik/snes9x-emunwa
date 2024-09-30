@@ -108,7 +108,7 @@ bool            generic_poll_server_end_hash_reply(SOCKET socket);
 bool            generic_poll_server_start_hash_reply(SOCKET socket);
 bool            generic_poll_server_send_binary_block(SOCKET socket, uint32_t size, const char* data);
 size_t          generic_poll_server_get_offset(const char *offset_str);
-generic_poll_server_memory_argument* generic_poll_server_parse_memory_argument(char** ag, unsigned int ac);
+generic_poll_server_memory_argument* generic_poll_server_parse_memory_argument(const char** ag, unsigned int ac);
 void            generic_poll_server_free_memory_argument(generic_poll_server_memory_argument* tofree);
 bool            generic_poll_server_send_binary_header(SOCKET socket, uint32_t size);
 

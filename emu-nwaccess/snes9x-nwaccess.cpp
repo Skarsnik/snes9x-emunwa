@@ -686,7 +686,7 @@ int64_t EmuNWAccessCoreRead(SOCKET socket, char ** args, int ac)
         send_error(socket, invalid_argument, "You can't only ommit the size of a single write");
         return 0;
     }
-    generic_poll_server_memory_argument* pargs = generic_poll_server_parse_memory_argument(args + 1, ac - 1);
+    generic_poll_server_memory_argument* pargs = generic_poll_server_parse_memory_argument((const char**) args + 1, ac - 1);
     generic_poll_server_memory_argument* cur = pargs;
     uint32_t total_size = 0;
     while (cur != NULL)
@@ -784,7 +784,7 @@ int64_t EmuNWAccessCoreWrite(SOCKET socket, char ** args, int ac)
         send_error(socket, invalid_argument, "You can't only ommit the size of a single write");
         return -1;
     }
-    generic_poll_server_memory_argument* pargs = generic_poll_server_parse_memory_argument(args + 1, ac - 1);
+    generic_poll_server_memory_argument* pargs = generic_poll_server_parse_memory_argument((const char**) args + 1, ac - 1);
     generic_poll_server_memory_argument* cur = pargs;
     // Checking arguments and fixing size when missing
     uint32_t total_size = 0;

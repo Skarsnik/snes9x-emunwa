@@ -197,7 +197,7 @@ bool        generic_poll_server_send_binary_header(SOCKET socket, uint32_t size)
     return true;
 }
 
-generic_poll_server_memory_argument*    generic_poll_server_parse_memory_argument(char** ag, unsigned int ac)
+generic_poll_server_memory_argument*    generic_poll_server_parse_memory_argument(const char** ag, unsigned int ac)
 {
     generic_poll_server_memory_argument* toret = (generic_poll_server_memory_argument*) malloc(sizeof(generic_poll_server_memory_argument));
     toret->next = NULL;
