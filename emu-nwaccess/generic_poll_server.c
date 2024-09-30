@@ -197,7 +197,7 @@ bool        generic_poll_server_send_binary_header(SOCKET socket, uint32_t size)
     return true;
 }
 
-generic_poll_server_memory_argument*    generic_poll_server_parse_memory_argument(char** ag, unsigned int ac)
+generic_poll_server_memory_argument*    generic_poll_server_parse_memory_argument(const char** ag, unsigned int ac)
 {
     generic_poll_server_memory_argument* toret = (generic_poll_server_memory_argument*) malloc(sizeof(generic_poll_server_memory_argument));
     toret->next = NULL;
@@ -794,7 +794,7 @@ static bool generic_poll_server_start(int poll_timeout)
             {
                 unsigned long piko = 1;
                 ioctlsocket(new_socket, FIONBIO, &piko);
-                int addrlen = sizeof(new_client);
+                unsigned int addrlen = sizeof(new_client);
                 getpeername(new_socket, (struct sockaddr *)&new_client, &addrlen);
                 char str[INET6_ADDRSTRLEN];
                 if (inet_ntop(AF_INET6, &new_client.sin6_addr, str, sizeof(str))) {

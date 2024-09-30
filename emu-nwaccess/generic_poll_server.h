@@ -6,6 +6,11 @@
 #include <stddef.h>
 #include "emulator_network_access_defines.h"
 
+#ifdef _WIN32
+#include <winsock2.h>
+#else
+typedef int SOCKET;
+#endif
 
 /*
 The function doing the command must returns this :
@@ -41,11 +46,6 @@ typedef generic_emu_nwa_command_entry generic_emu_nwa_commands_map_t[];
 typedef custom_emu_nwa_command_entry custom_emu_nwa_commands_map_t[];
 
 
-#ifdef _WIN32
-#include <winsock2.h>
-#else
-typedef int SOCKET;
-#endif
 
 typedef enum
 {
