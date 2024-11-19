@@ -46,24 +46,31 @@ struct NetworkAccessInfos {
     
     std::atomic_bool stateTriggerMutex;
     std::atomic_bool stateDoneMutex;
+    std::atomic_bool netStateTriggerMutex;
+    std::atomic_bool netStateDoneMutex;
     std::atomic_bool controlCommandTriggerMutex;
     std::atomic_bool controlCommandDone;
     
     SOCKET          stateTriggerClient;
-    char*           saveStatePath;
+    SOCKET          netStateTriggerClient;
+    std::string     saveStatePath;
     bool            stateError;
     bool            saveState;
+    bool            netSaveState;
+    bool            netStateError;
 
     bool                        controlCommandError;
     NetworkAccessControlCommand command;
     char*                       romToLoad;
+    char*                       netStateData;
+    uint32_t                    netStateDataSize;
     SOCKET                      controlClient;
     bool                        controlError;
 
     std::atomic_bool    stopRequest;
     std::atomic_bool    messageMutex;
     char            message[512];
-    THREAD_TYPE      thread;
+    THREAD_TYPE     thread;
     char*           id;
 #ifdef SNES9X_GTK
 //#include <gtk_s9xwindow.h>
@@ -90,11 +97,15 @@ struct NetworkAccessClient* EmuNWAccessGetClient(SOCKET socket);
 
 
 // This is needed by the generic_poll_server code from the Emu Network Access project
-
-bool    EmuNWAccessWriteToMemory(SOCKET socket, char* data, uint32_t);
+bool    EmuNWAccessBinaryBlockGotten(SOCKET socket, char* data, uint32_t);
 void    EmuNWAccessNewClient(SOCKET socket);
 void    EmuNWAccessRemoveClient(SOCKET socket);
 
+// Function that need binary block
+bool    EmuNWAccessWriteToMemory(SOCKET socket, char* data, uint32_t size);
+bool    EmuNWAcessLoadNetworkState(SOCKET socket, char* data, uint32_t size);
+
+// Command function
 int64_t    EmuNWAccessSetClientName(SOCKET socket, char **args, int ac);
 int64_t    EmuNWAccessEmuInfo(SOCKET socket, char **args, int ac);
 int64_t    EmuNWAccessEmuStatus(SOCKET socket, char **args, int ac);
@@ -116,4 +127,6 @@ int64_t    EmuNWAccessNop(SOCKET socket, char **args, int ac);
 int64_t    EmuNWAccessLoadState(SOCKET socket, char **args, int ac);
 int64_t    EmuNWAccessSaveState(SOCKET socket, char **args, int ac);
 int64_t    EmuNWAccessMessage(SOCKET socket, char** args, int ac);
-
+int64_t    EmuNWAccessListStates(SOCKET socket, char** args, int ac);
+int64_t    EmuNWAccessPrepareNetStateLoad(SOCKET socket, char** args, int ac);
+int64_t    EmuNWAccessNetworkStateSave(SOCKET socket, char** args, int ac);

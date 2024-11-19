@@ -3,6 +3,7 @@
 #include <errno.h>
 #include <memory.h>
 #include <sys/types.h>
+#include <filesystem>
 
 #define _WINSOCKAPI_
 
@@ -92,21 +93,22 @@ const generic_emu_nwa_commands_map_t generic_emu_mwa_map = {
     {CORE_MEMORIES, EmuNWAccessCoreMemories},
     {CORE_READ, EmuNWAccessCoreRead},
     {bCORE_WRITE, EmuNWAccessCoreWrite},
-    {DEBUG_BREAK, EmuNWAccessNop},
-    {DEBUG_CONTINUE, EmuNWAccessNop},
+    {LIST_STATES, EmuNWAccessListStates},
     {LOAD_STATE, EmuNWAccessLoadState},
     {SAVE_STATE, EmuNWAccessSaveState},
     {MESSAGE, EmuNWAccessMessage},
+    {bLOAD_STATE_FROM_NETWORK, EmuNWAccessPrepareNetStateLoad},
+    {SAVE_STATE_TO_NETWORK, EmuNWAccessNetworkStateSave}
 };
 
-const unsigned int generic_emu_mwa_map_size = 22;
+const unsigned int generic_emu_mwa_map_size = 23;
 const custom_emu_nwa_commands_map_t custom_emu_nwa_map = {0};
 const unsigned int custom_emu_nwa_map_size = 0;
-bool(*generic_poll_server_write_function)(SOCKET, char*, uint32_t) = &EmuNWAccessWriteToMemory;
+bool(*generic_poll_server_binary_block_gotten)(SOCKET, char*, uint32_t) = &EmuNWAccessBinaryBlockGotten;
 
-/*#ifdef _DEBUG 
+#ifdef _DEBUG 
 #define SKARSNIK_DEBUG 1
-#endif*/
+#endif
 #include "emu-nwaccess/generic_poll_server.c"
 
 struct NetworkAccessInfos NetworkAccessData;
@@ -170,8 +172,12 @@ void S9xNWAccessInitData()
     NetworkAccessData.controlCommandDone = false;
     NetworkAccessData.stateTriggerMutex = false;
     NetworkAccessData.stateDoneMutex = false;
-    NetworkAccessData.saveStatePath = nullptr;
+    NetworkAccessData.netStateTriggerMutex = false;
+    NetworkAccessData.netStateDoneMutex = false;
     NetworkAccessData.romToLoad = nullptr;
+    NetworkAccessData.netStateData = nullptr;
+    NetworkAccessData.netStateDataSize = 0;
+    NetworkAccessData.netStateError = false;
     NetworkAccessData.messageMutex = false;
     NetworkAccessData.message[0] = 0;
 }
@@ -250,6 +256,25 @@ bool EmuNWAccessAfterPoll()
             write(NetworkAccessData.stateTriggerClient, "\n\n", 2);
         NetworkAccessData.stateDoneMutex = false;
     }
+    if (NetworkAccessData.netStateDoneMutex)
+    {
+        s_debug("Net state command finished\n");
+        if (NetworkAccessData.netStateError)
+        {
+            send_error(NetworkAccessData.netStateTriggerClient, command_error, "Unable to do the save/load state operation");
+        } else {
+            if (NetworkAccessData.netSaveState) // save
+            {
+                generic_poll_server_send_binary_block(NetworkAccessData.netStateTriggerClient, NetworkAccessData.netStateDataSize, NetworkAccessData.netStateData);
+            }
+            else { // load
+                write(NetworkAccessData.netStateTriggerClient, "\n\n", 2);
+                generic_poll_server_end_binary_block_handling(NetworkAccessData.netStateTriggerClient);
+            }
+        }
+        NetworkAccessData.netStateError = false;
+        NetworkAccessData.netStateDoneMutex = false;
+    }
     if (NetworkAccessData.controlCommandDone)
     {
         if (NetworkAccessData.controlError)
@@ -299,15 +324,42 @@ bool    S9xNWAGuiLoop()
             // Save State
             if (NetworkAccessData.saveState)
             {
-                S9xFreezeGame(NetworkAccessData.saveStatePath);
+                S9xFreezeGame(NetworkAccessData.saveStatePath.c_str());
             }
             else { // Load State
-                S9xUnfreezeGame(NetworkAccessData.saveStatePath);
+                S9xUnfreezeGame(NetworkAccessData.saveStatePath.c_str());
             }
             S9xClearPause(PAUSE_FREEZE_FILE);
         }
         NetworkAccessData.stateDoneMutex = true;
         NetworkAccessData.stateTriggerMutex = false;
+    }
+    if (NetworkAccessData.netStateTriggerMutex)
+    {
+        if (Settings.StopEmulation)
+        {
+            NetworkAccessData.netStateError = true;
+        }
+        else {
+            S9xSetPause(PAUSE_FREEZE_FILE);
+            // Save
+            if (NetworkAccessData.netSaveState)
+            {
+                NetworkAccessData.netStateDataSize = S9xFreezeSize();
+                NetworkAccessData.netStateData = (char*) malloc(NetworkAccessData.netStateDataSize);
+                S9xFreezeGameMem((uint8*)NetworkAccessData.netStateData, NetworkAccessData.netStateDataSize);
+            }
+            else { // Load
+                NetworkAccessData.netStateError = ! S9xUnfreezeGameMem((uint8*)NetworkAccessData.netStateData, NetworkAccessData.netStateDataSize);
+                if (NetworkAccessData.netStateError == false)
+                    S9xMessage(S9X_INFO, S9X_FREEZE_FILE_INFO, "Savestate loaded from the network");
+                NetworkAccessData.netStateData = nullptr;
+                NetworkAccessData.netStateDataSize = 0;
+            }
+            S9xClearPause(PAUSE_FREEZE_FILE);
+        }
+        NetworkAccessData.netStateDoneMutex = true;
+        NetworkAccessData.netStateTriggerMutex = false;
     }
     if (NetworkAccessData.controlCommandTriggerMutex)
     {
@@ -456,6 +508,28 @@ int64_t EmuNWAccessSetClientName(SOCKET socket, char **args, int ac)
     return true;
 }
 
+
+bool    EmuNWAccessBinaryBlockGotten(SOCKET socket, char* data, uint32_t size)
+{
+    s_debug("binary block gotten\n");
+    auto gpsClient = get_client(socket);
+    if (gpsClient->current_command == bCORE_WRITE)
+        return EmuNWAccessWriteToMemory(socket, data, size);
+    if (gpsClient->current_command == bLOAD_STATE_FROM_NETWORK)
+        return EmuNWAcessLoadNetworkState(socket, data, size);
+}
+
+static bool checkAGameIsLoaded(SOCKET socket)
+{
+    if (Settings.StopEmulation)
+    {
+        send_error(socket, not_allowed, "No game is currently loaded");
+        return false;
+    }
+    return true;
+}
+
+
 int64_t EmuNWAccessEmuInfo(SOCKET socket, char ** args, int ac)
 {
     char list_command[2048];
@@ -562,6 +636,8 @@ int64_t EmuNWAccessLoadGame(SOCKET socket, char ** args, int ac)
 
 int64_t EmuNWAccessGameInfo(SOCKET socket, char ** args, int ac)
 {
+    if (!checkAGameIsLoaded(socket))
+        return 0;
     if (SendFullHashReply(socket, 5, "name", Memory.ROMName,
         "file", Memory.ROMFilename.c_str(),
         "region", Memory.Country(),
@@ -648,8 +724,20 @@ int64_t EmuNWAccessCoreMemories(SOCKET socket, char ** args, int ac)
     return 0;
 }
 
+static bool checkCoreReadAndCoreWrite(SOCKET socket, char** args, int ac)
+{
+    if (ac == 0)
+    {
+        send_error(socket, invalid_argument, "One arguments minimum expected: <domain>");
+        return false;
+    }
+    return checkAGameIsLoaded(socket);
+}
+
 int64_t EmuNWAccessCoreRead(SOCKET socket, char ** args, int ac)
 {
+    if (!checkCoreReadAndCoreWrite(socket, args, ac))
+        return 0;
     std::unique_lock<std::mutex> lk(Memory.lock);
 
     uint8* to_read = NULL;
@@ -715,6 +803,7 @@ int64_t EmuNWAccessCoreRead(SOCKET socket, char ** args, int ac)
         unsigned int size = cur->size;
         if (size == 0)
             size = getMemorySize(args[0]) - cur->offset;
+        s_debug("Read : %s\n", hexString((const char*)to_read + cur->offset, cur->size));
         if (write(socket, (const char*)to_read + cur->offset, size) == -1)
         {
             generic_poll_server_set_client_state_error(socket);
@@ -725,6 +814,8 @@ int64_t EmuNWAccessCoreRead(SOCKET socket, char ** args, int ac)
     generic_poll_server_free_memory_argument(pargs);
     return 0;
 }
+
+
 
 bool EmuNWAccessWriteToMemory(SOCKET socket, char* data, uint32_t size)
 {
@@ -753,6 +844,8 @@ bool EmuNWAccessWriteToMemory(SOCKET socket, char* data, uint32_t size)
 
 int64_t EmuNWAccessCoreWrite(SOCKET socket, char ** args, int ac)
 {
+    if (!checkCoreReadAndCoreWrite(socket, args, ac))
+        return -1;
     s_debug("Core Write  : %s - arg count : %d\n", args[0], ac);
     uint8* to_read = NULL;
     if (strcmp(args[0], "WRAM") == 0)
@@ -813,32 +906,100 @@ int64_t EmuNWAccessNop(SOCKET socket, char ** args, int ac)
     return false;
 }
 
+int64_t EmuNWAccessListStates(SOCKET socket, char** args, int ac)
+{
+    std::string directory = S9xGetDirectory(SNAPSHOT_DIR);
+    generic_poll_server_start_hash_reply(socket);
+    for (const auto& fileEntry : std::filesystem::directory_iterator(directory))
+    {
+        std::string ext = fileEntry.path().extension().string();
+        if (fileEntry.path().stem() == std::filesystem::path(Memory.ROMFilename).stem() &&
+            isdigit(ext.at(1)) && isdigit(ext.at(2)) && isdigit(ext.at(3)))
+        {
+            generic_poll_server_send_hash_reply(socket, 1, "filename", ext.substr(1).c_str());
+        }
+    }
+    generic_poll_server_end_hash_reply(socket);
+    return 0;
+}
+
+static bool EmuNWAccessPrepareState(SOCKET socket, const char* cmd, const char* slotname)
+{
+    std::filesystem::path saveStatePath = S9xGetDirectory(SNAPSHOT_DIR);
+    saveStatePath.append(std::filesystem::path(Memory.ROMFilename).stem().string() + "." + slotname);
+
+    if (saveStatePath.parent_path() != std::filesystem::path(S9xGetDirectory(SNAPSHOT_DIR)))
+    {
+        if (strcmp(cmd, "LOAD_STATE") == 0)
+            send_error(socket, invalid_argument, "LOAD_STATE: You can't exit the snapshot directory");
+        else
+            send_error(socket, invalid_argument, "SAVE_STATE: You can't exit the snapshot directory");
+        return false;
+    }
+    NetworkAccessData.stateTriggerMutex = true;
+    NetworkAccessData.saveStatePath = saveStatePath.string();
+    NetworkAccessData.stateTriggerClient = socket;
+    return true;
+}
+
 int64_t EmuNWAccessLoadState(SOCKET socket, char ** args, int ac)
 {
     if (ac != 1)
     {
-        send_error(socket, command_error, "LOAD_STATE: You need to provide a file to load");
+        send_error(socket, invalid_argument, "LOAD_STATE: You need to provide a filename or slotname to load");
         return -1;
     }
-    NetworkAccessData.stateTriggerMutex = true;
-    NetworkAccessData.saveStatePath = (char*)malloc(strlen(args[0]) + 1);
     NetworkAccessData.saveState = false;
-    NetworkAccessData.stateTriggerClient = socket;
-    strcpy(NetworkAccessData.saveStatePath, args[0]);
-    return true;
+    if (EmuNWAccessPrepareState(socket, "LOAD_STATE", args[0]) == false)
+        return -1;
+    return 0;
 }
 
 int64_t EmuNWAccessSaveState(SOCKET socket, char ** args, int ac)
 {
     if (ac != 1)
     {
-        send_error(socket, command_error, "SAVE_STATE: You need to provide a file path where to write the state");
+        send_error(socket, invalid_argument, "SAVE_STATE: You need to provide a file path where to write the state");
         return -1;
     }
-    NetworkAccessData.stateTriggerMutex = true;
-    NetworkAccessData.saveStatePath = (char*)malloc(strlen(args[0]) + 1);
     NetworkAccessData.saveState = true;
-    NetworkAccessData.stateTriggerClient = socket;
-    strcpy(NetworkAccessData.saveStatePath, args[0]);
-    return true;
+    if (EmuNWAccessPrepareState(socket, "LOAD_STATE", args[0]) == false)
+        return -1;
+    return 0;
+}
+
+int64_t    EmuNWAccessPrepareNetStateLoad(SOCKET socket, char** args, int ac)
+{
+    if (ac != 0)
+    {
+        send_error(socket, invalid_argument, "bLOAD_STATE_FROM_NETWORK: This command does not take arguments");
+        return -1;
+    }
+    NetworkAccessData.netSaveState = false;
+    NetworkAccessData.netStateTriggerClient = socket;
+    return 0;
+}
+
+int64_t EmuNWAccessNetworkStateSave(SOCKET socket, char** args, int ac)
+{
+    if (ac != 0)
+    {
+        send_error(socket, invalid_argument, "SAVE_STATE_TO_NETWORK: This command does not take arguments");
+        return -1;
+    }
+    NetworkAccessData.netSaveState = true;
+    NetworkAccessData.netStateDoneMutex = false;
+    NetworkAccessData.netStateTriggerMutex = true;
+    NetworkAccessData.netStateTriggerClient = socket;
+}
+
+bool    EmuNWAcessLoadNetworkState(SOCKET socket, char* data, uint32_t size)
+{
+    s_debug("Getting data for loading a save from network\n");
+    NetworkAccessClient* client = EmuNWAccessGetClient(socket);
+    NetworkAccessData.netStateDoneMutex = false;
+    NetworkAccessData.netStateData = data;
+    NetworkAccessData.netStateDataSize = size;
+    NetworkAccessData.netStateTriggerMutex = true;
+    return false;
 }

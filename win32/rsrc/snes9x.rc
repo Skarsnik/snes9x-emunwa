@@ -1079,9 +1079,9 @@ BEGIN
     END
     POPUP "&Cheat"
     BEGIN
-        MENUITEM "&Game Genie, Pro-Action Replay Codes", ID_CHEAT_ENTER,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Search for New Cheats",      ID_CHEAT_SEARCH,MFT_STRING,MFS_ENABLED
-        MENUITEM "&Apply Cheats",               ID_CHEAT_APPLY,MFT_STRING,MFS_CHECKED
+        MENUITEM "&Game Genie, Pro-Action Replay Codes", ID_CHEAT_ENTER
+        MENUITEM "&Search for New Cheats",      ID_CHEAT_SEARCH
+        MENUITEM "&Apply Cheats",               ID_CHEAT_APPLY, CHECKED
     END
     POPUP "&Netplay"
     BEGIN
@@ -1096,7 +1096,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Options...",                 ID_NETPLAY_OPTIONS
         MENUITEM SEPARATOR
-        MENUITEM "Enable Emu Network Control",  ID_EMU_NETWORK_COMMAND, CHECKED
+        MENUITEM "E&nable Emu Network Control", ID_EMU_NETWORK_COMMAND
     END
     POPUP "&Help"
     BEGIN

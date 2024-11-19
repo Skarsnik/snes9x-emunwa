@@ -31,6 +31,10 @@ typedef enum  {
     LOAD_STATE = 20,
     SAVE_STATE = 21,
     MESSAGE = 22,
+    LIST_STATES = 23,
+    bLOAD_STATE_FROM_NETWORK = 24,
+    SAVE_STATE_TO_NETWORK = 25,
+
 
     CUSTOM = 128
 } emulator_network_access_command;
@@ -64,7 +68,10 @@ const emulator_network_access_command_string_entry emulator_network_access_comma
     EMU_NWA_COMMAND_STRING(DEBUG_CONTINUE),
     EMU_NWA_COMMAND_STRING(LOAD_STATE),
     EMU_NWA_COMMAND_STRING(SAVE_STATE),
-    EMU_NWA_COMMAND_STRING(MESSAGE)
+    EMU_NWA_COMMAND_STRING(MESSAGE),
+    EMU_NWA_COMMAND_STRING(LIST_STATES),
+    EMU_NWA_COMMAND_STRING(bLOAD_STATE_FROM_NETWORK),
+    EMU_NWA_COMMAND_STRING(SAVE_STATE_TO_NETWORK)
 };
 
 const unsigned int emulator_network_access_number_of_command = sizeof(emulator_network_access_command_strings) / sizeof(emulator_network_access_command_strings[0]);
