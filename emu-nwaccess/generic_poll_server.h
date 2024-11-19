@@ -61,6 +61,7 @@ typedef enum
     GETTING_COMMAND,
     EXPECTING_BINARY_DATA,
     GETTING_BINARY_DATA,
+    CLIENT_PROCESSING_BINARY_DATA,
     WRITE_ERROR
 } generic_poll_server_client_state;
 
@@ -111,6 +112,7 @@ size_t          generic_poll_server_get_offset(const char *offset_str);
 generic_poll_server_memory_argument* generic_poll_server_parse_memory_argument(const char** ag, unsigned int ac);
 void            generic_poll_server_free_memory_argument(generic_poll_server_memory_argument* tofree);
 bool            generic_poll_server_send_binary_header(SOCKET socket, uint32_t size);
+void            generic_poll_server_end_binary_block_handling(SOCKET socket);
 
 // Use this to notify when you encounter an error on write, that allows the server to
 // properly discard the client

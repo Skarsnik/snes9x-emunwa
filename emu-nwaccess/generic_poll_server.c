@@ -401,19 +401,26 @@ static int64_t execute_command(generic_poll_server_client* client, char *cmd_str
     return -1;
 }
 
+void            generic_poll_server_end_binary_block_handling(SOCKET socket)
+{
+    generic_poll_server_client* client = get_client(socket);
+    free(client->binary_block);
+    client->binary_block = NULL;
+    client->binary_block_size = 0;
+    client->binary_header_size = 0;
+    client->expected_block_size = 0;
+    client->state = WAITING_FOR_COMMAND;
+}
+
 static void process_binary_block(generic_poll_server_client* client)
 {
-    if (client->current_command == bCORE_WRITE)
+    bool result = generic_poll_server_binary_block_gotten(client->socket_fd, client->binary_block, client->binary_block_size);
+    if (result == false)
     {
-        bool result = generic_poll_server_write_function(client->socket_fd, client->binary_block, client->binary_block_size);
-        free(client->binary_block);
-        client->binary_block = NULL;
-        client->binary_block_size = 0;
-        client->binary_header_size = 0;
-        client->expected_block_size = 0;
-        client->state = WAITING_FOR_COMMAND;
+        client->state = CLIENT_PROCESSING_BINARY_DATA;
+        return;
     }
-    return;
+    generic_poll_server_end_binary_block_handling(client->socket_fd);
 }
 
 static void process_command(generic_poll_server_client* client)
@@ -519,7 +526,7 @@ static bool preprocess_data(generic_poll_server_client* client)
 {
     unsigned int read_pos = 0;
     s_debug("Pre:Read size : %d\n", client->readed_size);
-    s_debug("Data : %s\n", hexString(client->readed_data, client->readed_size));
+    s_debug("Data : %s\n", hexString(client->readed_data, MIN(client->readed_size, 30)));
     while (read_pos == 0 || read_pos < client->readed_size)
     {
         s_debug("Client in state : %d\n", client->state);
@@ -533,6 +540,11 @@ static bool preprocess_data(generic_poll_server_client* client)
                 send_error(client->socket_fd, protocol_error, "Sending invalid binary data block");
                 return false;
             }
+        }
+        if (client->state == CLIENT_PROCESSING_BINARY_DATA)
+        {
+            send_error(client->socket_fd, protocol_error, "Not done processing the last binary block, can't send new datas");
+            return false;
         }
         if (client->state == GETTING_BINARY_DATA)
         {

@@ -747,16 +747,16 @@ int64_t EmuNWAccessCoreRead(SOCKET socket, char ** args, int ac)
     } else {
         s_debug("core read args : %s\n", args[0]);
     }
-    if (strncmp(args[0],"WRAM", 4) == 0)
+    if (strncmp(args[0],"WRAM", 4) == 0 && strlen(args[0]) == 4)
         to_read = Memory.RAM;
-    if (strncmp(args[0], "SRAM", 4) == 0)
+    if (strncmp(args[0], "SRAM", 4) == 0 && strlen(args[0]) == 4)
     {
        s_debug("Matched SRAM : %d\n", Memory.SRAM);
        to_read = Memory.SRAM;
     }
-    if (strncmp(args[0], "CARTROM", 7) == 0)
+    if (strncmp(args[0], "CARTROM", 7) == 0 && strlen(args[0]) == 7)
         to_read = Memory.ROM;
-    if (strncmp(args[0], "VRAM", 4) == 0)
+    if (strncmp(args[0], "VRAM", 4) == 0 && strlen(args[0]) == 4)
         to_read = Memory.VRAM;
     s_debug("to_read : %d\n", to_read);
     if (to_read == NULL)

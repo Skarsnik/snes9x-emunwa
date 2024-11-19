@@ -938,7 +938,7 @@ BEGIN
         MENUITEM "L&oad Game...\tCtrl+O",       ID_FILE_LOAD_GAME
         POPUP "Recent &Games"
         BEGIN
-            MENUITEM "Dummy",                       ID_RECENT_DUMMY, INACTIVE
+            MENUITEM "Dummy",                       ID_RECENT_DUMMY, GRAYED
         END
         MENUITEM "Load MultiCart...",           ID_FILE_LOADMULTICART
         MENUITEM SEPARATOR
