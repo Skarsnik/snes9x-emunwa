@@ -4,7 +4,10 @@
 #ifdef _WIN32
     #include <winsock2.h>
     typedef uintptr_t THREAD_TYPE;
+#else
+    typedef int SOCKET;
 #endif
+
 
 #ifdef SNES9X_GTK
     #include <glib.h>

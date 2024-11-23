@@ -15,7 +15,6 @@ The function doing the command must returns this :
                            this is needed so the code can properly swallow
                            the next binary block
 */
-
 typedef struct
 {
     emulator_network_access_command command;
@@ -76,8 +75,8 @@ typedef struct {
     SOCKET  socket_fd;
     char    readed_data[2048];
     char    command_data[2048];
-    int     readed_size;
-    int     command_data_size;
+    unsigned int    readed_size;
+    unsigned int    command_data_size;
     int     command_data_pos;
     bool    shallow_binary_block;
 
@@ -86,7 +85,7 @@ typedef struct {
     unsigned int        current_command;
 
     char                binary_header[5];
-    char                binary_header_size;
+    uint8_t             binary_header_size;
     char*               binary_block;
     unsigned int        binary_block_defined_size; // The size defined by the header
     unsigned int        binary_block_size; // The current size filled into the buffer

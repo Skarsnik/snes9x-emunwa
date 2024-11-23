@@ -410,8 +410,6 @@ if(USE_SLANG)
 endif()
 
 target_include_directories(snes9x-gtk PUBLIC "../emu-nwaccess/")
-target_include_directories(snes9x-gtk PUBLIC "../emu-nwaccess/emulator-networkaccess/generic poll server/")
-target_include_directories(snes9x-gtk PUBLIC "../emu-nwaccess/emulator-networkaccess/c_includes/")
 
 install(TARGETS snes9x-gtk)
 install(FILES ../data/cheats.bml DESTINATION ${DATADIR})

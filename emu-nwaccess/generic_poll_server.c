@@ -806,8 +806,13 @@ static bool generic_poll_server_start(int poll_timeout)
             {
                 unsigned long piko = 1;
                 ioctlsocket(new_socket, FIONBIO, &piko);
+                #ifdef _WIN32
                 int addrlen = sizeof(new_client);
+                #else
+                socklen_t addrlen = sizeof(new_client);
+                #endif
                 getpeername(new_socket, (struct sockaddr *)&new_client, &addrlen);
+
                 char str[INET6_ADDRSTRLEN];
                 if (inet_ntop(AF_INET6, &new_client.sin6_addr, str, sizeof(str))) {
                     s_debug("Client address is %s : %d\n", str, ntohs(new_client.sin6_port));
