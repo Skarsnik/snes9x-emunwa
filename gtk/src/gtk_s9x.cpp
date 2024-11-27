@@ -156,9 +156,9 @@ int main(int argc, char *argv[])
     if (rom_filename && *Settings.InitialSnapshotFilename)
         S9xUnfreezeGame(Settings.InitialSnapshotFilename);
 
-    if (true || gui_config->emulator_network_access_enabled)
+    S9xNWASetGtkWindow(top_level);
+    if (gui_config->emulator_network_access_enabled)
     {
-        S9xNWASetGtkWindow(top_level);
         S9xNWAccessInit();
         S9xNWAccessStart();
         Glib::signal_timeout().connect(sigc::ptr_fun(S9xNWALoop), 20);

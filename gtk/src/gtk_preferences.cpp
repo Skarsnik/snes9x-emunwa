@@ -15,6 +15,7 @@
 #include "snes9x.h"
 #include "gfx.h"
 #include "display.h"
+#include "snes9x-nwaccess.h"
 
 #define SAME_AS_GAME gettext("Same location as current game")
 
@@ -545,6 +546,8 @@ void Snes9xPreferences::move_settings_to_dialog()
     set_check("echo_buffer_hack", Settings.SeparateEchoBuffer);
     set_combo("sound_filter", Settings.InterpolationMethod);
 #endif
+    /* NWA */
+    set_check("enable_nwa", config->emulator_network_access_enabled);
 }
 
 void Snes9xPreferences::get_settings_from_dialog()
@@ -702,6 +705,20 @@ void Snes9xPreferences::get_settings_from_dialog()
     config->patch_directory = get_entry_text("patch_directory");
     config->cheat_directory = get_entry_text("cheat_directory");
     config->export_directory = get_entry_text("export_directory");
+
+    bool old_nwa_state = config->emulator_network_access_enabled;
+    config->emulator_network_access_enabled = get_check("enable_nwa");
+    if (old_nwa_state != config->emulator_network_access_enabled)
+    {
+        if (old_nwa_state == false)
+        {
+            S9xNWAccessInit();
+            S9xNWAccessStart();
+            Glib::signal_timeout().connect(sigc::ptr_fun(S9xNWAGuiLoop), 20);
+        } else {
+            S9xNWAccessStop();
+        }
+    }
 
     for (auto &i : { &new_sram_directory,
                      &config->savestate_directory,

@@ -120,7 +120,7 @@ class Snes9xConfig
     bool netplay_activated;
     bool netplay_server_up;
 
-    /*NWA */
+    /* NWA */
     bool emulator_network_access_enabled;
 
     /* Operational */

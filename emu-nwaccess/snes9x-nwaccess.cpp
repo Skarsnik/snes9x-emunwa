@@ -207,9 +207,12 @@ bool	S9xNWAccessStart()
 bool	S9xNWAccessStop()
 {
     NetworkAccessData.stopRequest = true;
-    #ifdef __WIN32__
+#ifdef __WIN32__
     WaitForSingleObject((HANDLE)NetworkAccessData.thread, 100);
-    #endif
+#elif defined(SNES9X_GTK)
+    g_thread_join(NetworkAccessData.thread);
+    g_thread_unref(NetworkAccessData.thread);
+#endif
     return true;
 }
 
